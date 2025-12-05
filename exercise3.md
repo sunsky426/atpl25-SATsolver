@@ -10,11 +10,13 @@ __Online interpreter__
 https://topps.diku.dk/pirc/?id=rfunT
 
 __For a more general introduction (note that it is an older syntax)__
-[1] Interpretation and programming of the reversible functional language RFUN; Michael Kirkedal Thomsen, Holger Bock Axelsen; IFL '15: Proceedings of the 27th Symposium on the Implementation and Application of Functional Programming Languages; Article No.: 8, Pages 1-13
+
+* [1] Interpretation and programming of the reversible functional language RFUN; Michael Kirkedal Thomsen, Holger Bock Axelsen; IFL '15: Proceedings of the 27th Symposium on the Implementation and Application of Functional Programming Languages; Article No.: 8, Pages 1-13
 https://dl.acm.org/doi/abs/10.1145/2897336.2897345
 
 __For a fundamental paper on the type system__
-[2] CoreFUN: a typed functional reversible core language; Petur Andrias Højgaard Jacobsen, Robin Kaarsgaard, Michael Kirkedal Thomsen; International Conference on Reversible Computation, Springer, Pages 304-321.
+
+* [2] CoreFUN: a typed functional reversible core language; Petur Andrias Højgaard Jacobsen, Robin Kaarsgaard, Michael Kirkedal Thomsen; International Conference on Reversible Computation, Springer, Pages 304-321.
 
 ### Exercises
 
@@ -68,14 +70,14 @@ data Operator = Atom(QC) | C (Operator) | Permute ([Int]) | Tensor (Operator,Ope
 ```
 [3] defines a complete equational theory for quantum circuits. Implementen the initial equational definitions (figures on the first few pages). You are also welcome to extend James' program in haskell with this.
 
-[3] A Complete Equational Theory for Quantum Circuits; Alexandre Clément, Nicolas Heurtel, Shane Mansfield, Simon Perdrix, Benoît Valiron; https://arxiv.org/pdf/2206.10577
+* [3] A Complete Equational Theory for Quantum Circuits; Alexandre Clément, Nicolas Heurtel, Shane Mansfield, Simon Perdrix, Benoît Valiron; https://arxiv.org/pdf/2206.10577
 
 
 
 ## Jeopardy
 A functional language bearing syntactic resemblance to you garden variety functional programming language and, consequently, exhibits the expected semantics for programs running in the conventional direction.
 
-[4] Jeopardy: An invertible functional programming language; Joachim Tilsted Kristensen, Robin Kaarsgaard, Michael Kirkedal Thomsen; International Conference on Reversible Computation, Springer. Pages 124-141
+* [4] Jeopardy: An invertible functional programming language; Joachim Tilsted Kristensen, Robin Kaarsgaard, Michael Kirkedal Thomsen; International Conference on Reversible Computation, Springer. Pages 124-141
 https://arxiv.org/pdf/2209.02422
 
 __Source code__
