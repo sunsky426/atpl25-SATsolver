@@ -1,6 +1,5 @@
 module HQP.QOp.Operator where
 import Data.Complex
-import Data.Tuple (swap)
 
 type RealT = Double
 type ComplexT = Complex RealT
@@ -22,7 +21,7 @@ data Operator
 
 -- operator number (of qubits)
 num :: Operator -> Nat
-num (Atom g) = 1
+num (Atom _) = 1
 num (C op) = 1 + num op
 num (Permute indices) = length indices
 num (Tensor op1 op2) = num op1 + num op2
@@ -42,6 +41,7 @@ ket0, ket1 :: Qubit
 ket0 = (1, 0)
 ket1 = (0, 1)
 
+i :: Num a => Complex a
 i = 0 :+ 1
 
 zero :: TensorTerm
@@ -54,7 +54,7 @@ scale :: ComplexT -> TensorTerm -> TensorTerm
 scale k ts = map (scale' k) ts
 
 scale' :: ComplexT -> PureTensor -> PureTensor
-scale' k [] = error "scale applied to 0 qubits"
+scale' _ [] = error "scale applied to 0 qubits"
 scale' k ((a, b) : qs) = (k * a, k * b) : qs
 
 gate :: QubitOp -> Qubit -> Qubit
@@ -67,12 +67,12 @@ gate _ _ = undefined
 
 eval :: Operator -> TensorTerm -> TensorTerm
 eval (Atom g) ts = map (map (gate g)) ts
-eval (C op) ts = map f0 ts -- `add` map (ket1 :) (eval op (map f1 ts))
-     where f0 ((a, b) : qs) = ket0 : scale' a qs
+eval (C _) ts = map f0 ts -- `add` map (ket1 :) (eval op (map f1 ts))
+     where f0 ((a, _) : qs) = ket0 : scale' a qs
            f0 [] = error "Missing qubit..."
-           f1 ((a, b) : qs) = scale' b qs
-           f1 [] = error "Missing qubit.."
-eval (Permute indices) ts = undefined
+           --f1 ((a, b) : qs) = scale' b qs
+           --f1 [] = error "Missing qubit.."
+eval (Permute _) _ = undefined
 eval (Tensor op1 op2) ts = concatMap (prod . process . split) ts
   where num1 = num op1
         split = splitAt num1
@@ -80,7 +80,7 @@ eval (Tensor op1 op2) ts = concatMap (prod . process . split) ts
         res1 t1 = eval op1 [t1]
         res2 t2 = eval op2 [t2]
         prod (ts1, ts2) = [t1 ++ t2 | t1 <- ts1, t2 <- ts2]
-eval (Id n) ts = ts
+eval (Id _) ts = ts
 eval (Compose op1 op2) ts =
   if num op1 == num op2
   then eval op2 (eval op1 ts)
@@ -88,5 +88,6 @@ eval (Compose op1 op2) ts =
 eval (Adjoint op) ts  = eval (normalize (Adjoint op)) ts
 
 -- elimininate Adjoint in operator expressions
-normalize op = undefined -- 
+normalize :: p -> a
+normalize _ = undefined -- 
 

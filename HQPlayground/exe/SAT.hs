@@ -5,5 +5,7 @@ import Parser
 
 main :: IO()
 main = 
-    let exp = NEG (Atom "p") in
-    putStr "Hello"
+  let example = "p & q | (123 & ~456) & ( (x ^ y) ^ z)"
+   in case parse example of
+        Right x  -> putStrLn $ show x
+        Left err -> putStrLn err

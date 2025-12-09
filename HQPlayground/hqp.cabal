@@ -3,7 +3,6 @@ name:            hqp
 version:         0.1.0.0
 synopsis:        HQP language playground in Haskell
 license:         BSD-3-Clause
-license-file:    LICENSE
 author:          James Avery
 maintainer:      avery@diku.dk
 category:        Math
@@ -31,6 +30,7 @@ library core
       HQP.QOp,
       HQP.QOp.Syntax,
       HQP.QOp.Simplify,
+      HQP.QOp.Operator,
       HQP.QOp.HelperFunctions,
       HQP.QOp.MatrixSemantics,
       HQP.QOp.TensorSemantics,

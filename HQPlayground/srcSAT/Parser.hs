@@ -1,4 +1,4 @@
-module Parser where
+module Parser ( parse, ) where
 
 import AST
 import Data.Char (isAlphaNum)
@@ -123,6 +123,6 @@ parseExp = choice
 
 parse :: String -> Either Error Exp
 parse s = 
-  case runParser (parseExp) s of
+  case runParser (parseExp <* eof) s of
     Right (_,res) -> Right res
     Left err      -> Left err
