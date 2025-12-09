@@ -1,4 +1,4 @@
-module AST where 
+module AST where
 
 data Exp = 
     Atom String
