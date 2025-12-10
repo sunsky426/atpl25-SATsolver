@@ -1,7 +1,7 @@
 module Parser ( parse, ) where
 
 import AST
-import Data.Char (isAlphaNum)
+import Data.Char (isAlphaNum, isNumber)
 import Control.Monad (ap,liftM,void)
 
 type Error = String
@@ -82,8 +82,8 @@ lString :: String -> Parser ()
 lString s = lexeme $ void $ chunk s
 
 -- Include this only to ensure consistent whitespace handling using lexeme (easy to forget otherwise)
-lVar:: Parser String
-lVar = lexeme $ some $ satisfy isAlphaNum
+lVar:: Parser Int
+lVar = lexeme $ read <$> some (satisfy isNumber)
 
 
 parseAtom :: Parser Exp
@@ -100,7 +100,7 @@ parseExp = choice
   [
     do
       lString "~"
-      x <- parseExp1
+      x <- parseExp
       pure $ NEG x,
     do
       x <- parseAtom
