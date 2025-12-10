@@ -91,7 +91,7 @@ parseAtom = choice
   [
     do
       x <- lVar
-      pure $ Atom x,
+      pure $ Var x,
     lString "(" *> parseExp <* lString ")"
   ]
 

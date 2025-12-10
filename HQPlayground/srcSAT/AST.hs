@@ -1,7 +1,7 @@
 module AST where
 
 data Exp = 
-    Atom String
+    Var Int
   | AND Exp Exp 
   | OR Exp Exp
   | XOR Exp Exp 
