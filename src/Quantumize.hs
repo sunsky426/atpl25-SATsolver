@@ -36,6 +36,7 @@ emit toAdd = do
   cs <- get
   put $ cs {instrs = instrs cs ++ toAdd}
 
+-- compiling logical expression to an internal imperative language
 compile' :: Exp -> Compiler Register
 compile' (Var n) = pure $ Input n
 compile' (AND e1 e2) = do
@@ -91,11 +92,13 @@ cx :: CircuitWidth -> Int -> Int -> QOp
 cx n i j = 
   swap n (i, 0) <> swap n (j, 1) <> C X <.> pow I (n - 2) <> swap n (i, 0) <> swap n (j, 1)
 
+-- register name to qubit number
 registerToPos :: Int -> Register -> Int
 registerToPos _ Output = 0
 registerToPos _ (Input i) = i + 1
 registerToPos n (Ancilla i) = n + i
 
+-- convert internal language to quantum circuit
 quantumize :: (Int, Int) -> [Instr] -> QOp
 quantumize (n, m) [] = pow I width
   where width = n + m + 1
