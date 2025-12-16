@@ -24,7 +24,9 @@ executable SATQ
                       Quantumize,
                       Grovers,
                       ProgramInversion,
-                      Macros
+                      Macros,
+                      Eval,
+                      Gates
     -- other-extensions:
     build-depends:    base ^>=4.18.2.1,
                       hqp,
