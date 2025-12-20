@@ -11,15 +11,19 @@ import Macros
 data PureTensor = PT {scalar :: CC, qbs :: V.Vector Qubit}
   deriving(Show)
 
+-- utility functions for pure tensors
+-- updates entries using [(index, updateFunction)]
 (//) :: PureTensor -> [(Int, Qubit -> Qubit)] -> PureTensor
 (PT z vec) // updates = PT z $ vec V.// (phi <$> updates)
   where
     phi :: (Int, Qubit -> Qubit) -> (Int, Qubit)
     phi (index, f) = (index, f (vec V.! index))
 
+-- indexes an entry
 (!) :: PureTensor -> Int -> Qubit
 (PT _ vec) ! i = vec V.! i
 
+-- multiples by scalar
 (*^) :: CC -> PureTensor -> PureTensor
 alpha *^ (PT z vec) = PT (alpha * z) vec
 
@@ -50,21 +54,24 @@ evalGate gate = fixpoint tensorSimp . concatMap (evalTerm gate)
 evalTerm :: Gate -> PureTensor -> Tensor
 evalTerm (Only pos gate) qbs = pure $ qbs // [(pos, evalSingle gate)]
 evalTerm (Ctrl ctrls target gate) qbs =
-  case product $ [qfst (qbs ! i) | i <- ctrls] of
-    0 -> [qbs // [(target, evalSingle gate)]]
-    _ -> case product $ [qsnd (qbs ! i) | i <- ctrls] of
-      0 -> [qbs]
-      beta -> [qbs, correction]
-        where
-          targetUpdate q = evalSingle gate q - q
-          ctrlUpdates = repeat $ const $ qubit 0 1
-          correction = (beta *^ qbs) // zip (target : ctrls) (targetUpdate : ctrlUpdates)
+  if all (~=0) ([qfst (qbs ! i) | i <- ctrls])
+  then [qbs // [(target, evalSingle gate)]] -- if the all the control have qfst q = 0, the just apply G on target
+  else case product $ [qsnd (qbs ! i) | i <- ctrls] of
+    0 -> [qbs] -- if beta = 0, there is no correction
+    beta -> [qbs, correction] -- calculate correction for non-zero beta
+      where
+        targetUpdate q = evalSingle gate q - q
+        ctrlUpdates = repeat $ const $ qubit 0 1
+        correction = (beta *^ qbs) // zip (target : ctrls) (targetUpdate : ctrlUpdates)
 
 tensorSimp :: Tensor -> Tensor
-tensorSimp tensor = f tensor [(pureTensorSimp (tensor !! i) (tensor !! j), i, j) | i <- [0..size - 1], j <- [i+1..size-1]]
+tensorSimp tensor = f tensor simpUpdates
   where
     size = length tensor
+    simpUpdates = [(pureTensorSimp (tensor !! i) (tensor !! j), i, j) | i <- [0..size - 1], j <- [i+1..size-1]]
+    -- the list is [result, i, j] where i, j are every pair of puretensors and result is what the two tensors can be simplified to (or Nothing oif they can't be similfied)
     f :: Tensor -> [(Maybe PureTensor, Int, Int)] -> Tensor
+    -- f goes through simpUpdates for a successful rewrite and applies the first one it see, then exits
     f t [] = t
     f t (update : updates) =
       case update of
@@ -77,10 +84,13 @@ pureTensorSimp pt1@(PT z1 v1) pt2@(PT z2 v2) =
   in case countFalse isEq of
       0 ->
         Just $ PT (z1 + z2) v1
+        -- if the puretensors are equal up to a scalar, then just sum the scalars (rule 3)
       1 -> do
         firstFalseIndex <- V.findIndex not isEq
         quotient <- (pt2 ! firstFalseIndex) /^ (pt1 ! firstFalseIndex)
         Just $ PT (z1 + quotient * z2) v1
+        -- if the puretensors are equal up to a scalar except for one factor. 
+        -- Then we see if the factor in question are equal up to a scalar k. If so, factor k to the front and then sum the scalars.
       _ -> Nothing
 
 -- Utility Functions
@@ -93,11 +103,11 @@ fixpoint f x =
     let x' = f x
     in if x' ~= x then x else f x'
 
+-- delete two elements of a list by index
 deleteAtTwo :: (Int, Int) -> [a] -> [a]
 deleteAtTwo (i, j) xs = [x | (k, x) <- zip [0..] xs, k /= i, k /= j]
 
--- pretty print
-
+-- pretty printer
 pp :: Tensor -> IO ()
 pp [] = putStrLn ""
 pp [pt] = putStrLn $ ppPT pt
@@ -109,7 +119,7 @@ pp (pt: pt' : pts) = do
 ppPT :: PureTensor -> String
 ppPT (PT z v) = show z ++ "*" ++ V.foldl1 (\acc str -> acc ++ "⊗" ++ str) (V.map show v)
 
---
+-- evaluate Program by parts so I see what happens when it stalls
 evalByParts :: Int -> Program -> Tensor -> IO Tensor
 evalByParts _ [] t = pure t
 evalByParts n prog t = do
