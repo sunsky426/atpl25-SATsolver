@@ -6,19 +6,34 @@ import LinAlg
 import qualified Data.Vector as V
 import Macros
 
-type PureTensor = V.Vector Qubit
+-- type definations
 
-type Tensor = [PureTensor]
+data PureTensor = PT {scalar :: CC, qbs :: V.Vector Qubit}
+  deriving(Show)
+
+(//) :: PureTensor -> [(Int, Qubit -> Qubit)] -> PureTensor
+(PT z vec) // updates = PT z $ vec V.// (phi <$> updates)
+  where
+    phi :: (Int, Qubit -> Qubit) -> (Int, Qubit)
+    phi (index, f) = (index, f (vec V.! index))
+
+(!) :: PureTensor -> Int -> Qubit
+(PT _ vec) ! i = vec V.! i
+
+(*^) :: CC -> PureTensor -> PureTensor
+alpha *^ (PT z vec) = PT (alpha * z) vec
 
 instance ApproxEq PureTensor where
-  approxEq tolerence a b = V.and $ V.zipWith (approxEq tolerence) a b
+  approxEq tolerence (PT za va) (PT zb vb) = approxEq tolerence za zb && V.and (V.zipWith (approxEq tolerence) va vb)
+
+type Tensor = [PureTensor]
 
 instance ApproxEq Tensor where
   approxEq tolerence a b = and $ zipWith (approxEq tolerence) a b
 
 -- |0..0> in tensor notation
 zero :: Int -> Tensor
-zero dim = [V.replicate dim (qubit 1 0)]
+zero dim = [PT 1 $ V.replicate dim (qubit 1 0)]
 
 hadamard :: Int -> Tensor
 hadamard dim = evalProgram (pow H dim) (zero dim)
@@ -33,12 +48,17 @@ evalGate gate = fixpoint tensorSimp . concatMap (evalTerm gate)
 
 -- evaluates a gate on a pure tensor, using LinAlg Module
 evalTerm :: Gate -> PureTensor -> Tensor
-evalTerm (Only pos gate) qbs = pure $ qbs V.// [(pos, evalSingle gate (qbs V.! pos))]
-evalTerm (Ctrl ctrls target gate) qbs = [qbs, correction]
-  where
-    beta = product $ [qsnd (qbs V.! i) | i <- ctrls]
-    targetVal' = beta *^ (evalSingle gate (qbs V.! target) - (qbs V.! target))
-    correction = qbs V.// ((target, targetVal') : zip ctrls (repeat (qubit 0 1)))
+evalTerm (Only pos gate) qbs = pure $ qbs // [(pos, evalSingle gate)]
+evalTerm (Ctrl ctrls target gate) qbs =
+  case product $ [qfst (qbs ! i) | i <- ctrls] of
+    0 -> [qbs // [(target, evalSingle gate)]]
+    _ -> case product $ [qsnd (qbs ! i) | i <- ctrls] of
+      0 -> [qbs]
+      beta -> [qbs, correction]
+        where
+          targetUpdate q = evalSingle gate q - q
+          ctrlUpdates = repeat $ const $ qubit 0 1
+          correction = (beta *^ qbs) // zip (target : ctrls) (targetUpdate : ctrlUpdates)
 
 tensorSimp :: Tensor -> Tensor
 tensorSimp tensor = f tensor [(pureTensorSimp (tensor !! i) (tensor !! j), i, j) | i <- [0..size - 1], j <- [i+1..size-1]]
@@ -52,15 +72,15 @@ tensorSimp tensor = f tensor [(pureTensorSimp (tensor !! i) (tensor !! j), i, j)
         (Just pt', i, j) -> pt' : deleteAtTwo (i, j) t
 
 pureTensorSimp :: PureTensor -> PureTensor -> Maybe PureTensor
-pureTensorSimp t1 t2 =
-  let isEq = V.zipWith (~=) t1 t2
+pureTensorSimp pt1@(PT z1 v1) pt2@(PT z2 v2) =
+  let isEq = V.zipWith (~=) v1 v2
   in case countFalse isEq of
       0 ->
-        let lastIndex = length t1 - 1
-        in Just $ t1 V.// [(lastIndex, 2 *^ (t1 V.! lastIndex))]
+        Just $ PT (z1 + z2) v1
       1 -> do
         firstFalseIndex <- V.findIndex not isEq
-        Just $ t1 V.// [(firstFalseIndex, (t1 V.! firstFalseIndex) + (t2 V.! firstFalseIndex))]
+        quotient <- (pt2 ! firstFalseIndex) /^ (pt1 ! firstFalseIndex)
+        Just $ PT (z1 + quotient * z2) v1
       _ -> Nothing
 
 -- Utility Functions
@@ -87,7 +107,7 @@ pp (pt: pt' : pts) = do
   pp (pt' : pts)
 
 ppPT :: PureTensor -> String
-ppPT pt = V.foldl1 (\acc str -> acc ++ "⊗" ++ str) $ V.map show pt
+ppPT (PT z v) = show z ++ "*" ++ V.foldl1 (\acc str -> acc ++ "⊗" ++ str) (V.map show v)
 
 --
 evalByParts :: Int -> Program -> Tensor -> IO Tensor
@@ -96,5 +116,5 @@ evalByParts n prog t = do
     let prog1 = take n prog
     let t' = evalProgram prog1 t
     putStrLn $ show (length t') ++ ","
-    pp t'
+    -- pp t'
     evalByParts n (drop n prog) t'

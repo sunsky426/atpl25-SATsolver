@@ -1,5 +1,5 @@
 {-# LANGUAGE DerivingStrategies #-}
-module LinAlg(Qubit, qubit, evalSingle, (*^), qfst, qsnd, ApproxEq(..)) where
+module LinAlg(Qubit, qubit, evalSingle, qfst, qsnd, ApproxEq(..), CC, (/^)) where
 
 import Gates
 import Numeric.LinearAlgebra
@@ -14,6 +14,9 @@ type CC = Complex Double
 
 instance ApproxEq Double where
   approxEq tolerence a b = abs (a - b) < tolerence
+
+instance ApproxEq CC where
+  approxEq tolerence a b = magnitude (a - b) < tolerence
 
 showImag :: Double -> String
 showImag 1  = "i"
@@ -43,6 +46,12 @@ qubit a b = Qubit (2 |> [a, b])
 
 (*^) :: CC -> Qubit -> Qubit
 z *^ (Qubit v) = Qubit $ scale z v
+
+(/^) :: Qubit -> Qubit -> Maybe CC
+qb1 /^ qb2 =
+  if (qfst qb1 / qfst qb2) == (qsnd qb1 / qsnd qb2)
+    then Just $ qfst qb1 / qfst qb2
+    else Nothing
 
 qfst :: Qubit -> CC
 qfst (Qubit v) = v ! 0
