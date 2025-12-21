@@ -24,12 +24,14 @@ executable SATQ
                       Quantumize,
                       Grovers,
                       ProgramInversion,
-                      Macros
+                      Macros,
+                      Transform
     -- other-extensions:
     build-depends:    base ^>=4.18.2.1,
                       hqp,
                       mtl,
-                      random
+                      random,
+                      containers
     hs-source-dirs:   exe,
                       src
     default-language: GHC2021
