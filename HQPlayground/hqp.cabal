@@ -23,7 +23,7 @@ common common-options
         BinaryLiterals,
         PatternSynonyms
 
-library core
+library
     import:   warnings, common-options
     exposed-modules: 
       HQP,
@@ -38,27 +38,12 @@ library core
       HQP.PrettyPrint,
       HQP.PrettyPrint.PrettyOp,
       HQP.PrettyPrint.PrettyMatrix,
-      Programs.QFT,
-      AST,
-      Quantumize,
-      Parser
+      Programs.QFT
 
     build-depends:  
         base,
         hmatrix,
         random,
         mtl
-    hs-source-dirs:   srcHQP, srcSAT
+    hs-source-dirs: HQP
 
-common exe-common
-  hs-source-dirs: exe
-  build-depends:
-      base,
-      hmatrix,
-      hqp:core
-  ghc-options: -Wall
-
-executable SAT
-  import: exe-common
-  main-is: SAT.hs
-  

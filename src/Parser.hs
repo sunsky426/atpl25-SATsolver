@@ -1,12 +1,14 @@
 module Parser ( parse, ) where
 
 import AST
-import Data.Char (isAlphaNum, isNumber)
+import Data.Char (isAlphaNum)
 import Control.Monad (ap,liftM,void)
 
 type Error = String
+type VTable = [(String,Int)]
+type ParserState = (String,VTable)
 
-newtype Parser a = Parser {runParser :: (String -> Either Error (String, a))}
+newtype Parser a = Parser {runParser :: (ParserState -> Either Error (ParserState, a))}
 
 instance Functor Parser where
   fmap = liftM
@@ -23,13 +25,16 @@ instance Monad Parser where
         let Parser y = f x'
          in y tok'
 
+initTable :: VTable
+initTable = []
+
 eof :: Parser ()
-eof = Parser $ \s -> case s of
-  "" -> Right ("",())
+eof = Parser $ \(s,v) -> case s of
+  "" -> Right (("",v),())
   _  -> Left "Expected end of input"
 
 space :: Parser ()
-space = Parser $ \s -> Right (clean s,())
+space = Parser $ \(s,v) -> Right ((clean s,v),())
   where
     clean (s:s')
       | s == ' '  = clean s'
@@ -40,16 +45,16 @@ lexeme :: Parser a -> Parser a
 lexeme p = p <* space
 
 satisfy :: (Char -> Bool) -> Parser Char
-satisfy p = Parser $ \s ->
+satisfy p = Parser $ \(s,v) ->
   case s of
     c : cs ->
       if p c
-        then Right (cs, c)
+        then Right ((cs,v), c)
         else Left $ c : " did not satisfy a predicate."
     _ -> Left "Empty input."
 
 choice :: [Parser a] -> Parser a
-choice [] = Parser $ \s -> Left $ "Illegal program: " ++ s
+choice [] = Parser $ \(s,_) -> Left $ "Illegal program: " ++ s
 choice (p:ps) = Parser $ \s ->
   case runParser p s of
     Left _ -> runParser (choice ps) s
@@ -81,16 +86,36 @@ chunk (c : cs) = do
 lString :: String -> Parser ()
 lString s = lexeme $ void $ chunk s
 
--- Include this only to ensure consistent whitespace handling using lexeme (easy to forget otherwise)
-lVar:: Parser Int
-lVar = lexeme $ read <$> some (satisfy isNumber)
+-- Include this only to ensure consistent whitespace handling using lexeme (easy to forget otherwise).
+lVar:: Parser String
+lVar = lexeme $ some $ satisfy isAlphaNum
+
+getEnv :: Parser VTable
+getEnv = Parser $ \(s,v) -> Right ((s,v),v)
+
+modEnv :: (VTable -> VTable) -> Parser ()
+modEnv f = Parser $ \(s,v) -> Right ((s,f v),())
+
+-- A transformer literal. Consumes a variable, and looks up/stores that variable in the environment,
+-- and maps each unique variable to one unique integer.
+tVar :: Parser Int
+tVar = do
+  v <- lVar
+  env <- getEnv
+  case lookup v env of
+    Just x -> pure x
+    Nothing ->
+      let s = length env
+       in do 
+            modEnv (\table -> (v,s) : table)
+            pure s
 
 
 parseAtom :: Parser Exp
 parseAtom = choice
   [
     do
-      x <- lVar
+      x <- tVar
       pure $ Var x,
     lString "(" *> parseExp <* lString ")"
   ]
@@ -100,7 +125,7 @@ parseExp = choice
   [
     do
       lString "~"
-      x <- parseExp
+      x <- parseAtom
       pure $ NEG x,
     do
       x <- parseAtom
@@ -123,6 +148,6 @@ parseExp = choice
 
 parse :: String -> Either Error Exp
 parse s = 
-  case runParser (parseExp <* eof) s of
+  case runParser (parseExp <* eof) (s,initTable) of
     Right (_,res) -> Right res
     Left err      -> Left err
