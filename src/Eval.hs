@@ -56,6 +56,8 @@ evalTerm (Only pos gate) qbs = pure $ qbs // [(pos, evalSingle gate)]
 evalTerm (Ctrl ctrls target gate) qbs =
   if all (~=0) ([qfst (qbs ! i) | i <- ctrls])
   then [qbs // [(target, evalSingle gate)]] -- if the all the control have qfst q = 0, the just apply G on target
+  else if evalSingle gate (qbs ! target) ~= (qbs ! target) 
+  then [qbs] -- if gate does not nothing to the target qubit, ignore it
   else case product $ [qsnd (qbs ! i) | i <- ctrls] of
     0 -> [qbs] -- if beta = 0, there is no correction
     beta -> [qbs, correction] -- calculate correction for non-zero beta
