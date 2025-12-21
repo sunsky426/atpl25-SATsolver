@@ -1,7 +1,8 @@
 module AST where
 
 data Exp = 
-    Var Int
+    Const Bool
+  | Var Int
   | AND Exp Exp 
   | OR Exp Exp
   | XOR Exp Exp 
