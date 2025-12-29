@@ -2,8 +2,11 @@ module Main where
 
 import Parser
 import Quantumize
-import Grovers
+import Grovers2
 import Generator
+import Eval
+import Macros 
+import Gates
 
 main :: IO ()
 main = 
@@ -12,20 +15,21 @@ main =
       example = "p & q | (123 & ~123) & ( (x ^ y) ^ z)"
 
       -- parse input
-      bexp = 
-        case parse example of
+      (bexp,n) = 
+        case parseWithUnique example of
           Right x  -> x
           Left err -> error err
 
       -- quantumize boolean expression
-      (instrs,s) = compile bexp
-      qop = quantumize (s,s) instrs
+      (instrs,m) = compile bexp
+      qop = quantumize (n,m) instrs
 
       -- apply Grover's algorithm
-      _ = undefined
+      width = n + m + 1
+      groversCircuit = groverIteration qop (diffusion width) 1
 
       -- ???
-      _ = undefined
+      --h = evalProgram groversCircuit (zero width)
 
       -- profit
-   in undefined
+   in putStrLn $ show $ length groversCircuit

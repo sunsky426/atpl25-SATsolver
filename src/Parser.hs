@@ -1,4 +1,4 @@
-module Parser ( parse, ) where
+module Parser ( parse, parseWithUnique, ) where
 
 import AST
 import Data.Char (isAlphaNum)
@@ -151,3 +151,9 @@ parse s =
   case runParser (parseExp <* eof) (s,initTable) of
     Right (_,res) -> Right res
     Left err      -> Left err
+
+parseWithUnique :: String -> Either Error (Exp, Int)
+parseWithUnique s =
+  case runParser (parseExp <* eof) (s,initTable) of
+    Right ((_,vt),res) -> Right (res,length vt)
+    Left err -> Left err

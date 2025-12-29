@@ -1,8 +1,6 @@
 module ProgramInversion where
 
 import HQP
-import Programs.QFT
-import qualified HQP.QOp.MatrixSemantics as MatSem
 import Data.List (elemIndex)
 import Data.Maybe (fromJust)
 
@@ -58,5 +56,5 @@ cleanAdjoint x = x
 applyRewrites :: [QOp -> QOp] -> QOp -> QOp
 applyRewrites rewrites op = foldl (flip ($)) op rewrites
 
-fixRewrites :: [QOp -> QOp] -> QOp -> QOp
-fixRewrites rewrites = fixpoint (applyRewrites rewrites)
+-- fixRewrites :: [QOp -> QOp] -> QOp -> QOp
+-- fixRewrites rewrites = fixpoint (applyRewrites rewrites)

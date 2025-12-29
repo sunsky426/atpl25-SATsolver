@@ -25,13 +25,20 @@ executable SATQ
                       Grovers,
                       ProgramInversion,
                       Macros,
+                      Eval,
+                      Gates,
+                      LinAlg,
+                      Comp,
                       Transform
     -- other-extensions:
     build-depends:    base ^>=4.18.2.1,
                       hqp,
                       mtl,
                       random,
+                      hmatrix,
+                      vector,
                       containers
     hs-source-dirs:   exe,
-                      src
+                      src,
+                      src2
     default-language: GHC2021

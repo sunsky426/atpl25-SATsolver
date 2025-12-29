@@ -2,8 +2,7 @@ module Quantumize(compile, quantumize) where
 
 import AST
 import Control.Monad.State
-import HQP.QOp.Syntax
-import Macros
+import Gates
 
 data Register
   = Input Int
@@ -46,7 +45,7 @@ compile' (AND e1 e2) = do
   out <- alloc
   emit [InstrAND in1 in2 out]
   pure out
-compile' (OR e1 e2) = compile' $ elimORwXOR $ OR e1 e2
+compile' (OR e1 e2) = compile' $ elimORwMorgan $ OR e1 e2
 compile' (XOR e1 e2) = do
   in1 <- compile' e1
   in2 <- compile' e2
@@ -73,24 +72,23 @@ compile expr = (instrs result, next result)
       emit $ reverse instrs
 
 -- register name to qubit number
-registerToPos :: Int -> Register -> Int
+registerToPos :: (Int, Int) -> Register -> Int
 registerToPos _ Output = 0
 registerToPos _ (Input i) = i + 1
-registerToPos n (Ancilla i) = n + i
+registerToPos (n, _m) (Ancilla i) = n + i
 
 -- convert internal language to quantum circuit
-quantumize :: (Int, Int) -> [Instr] -> QOp
-quantumize (n, m) [] = pow I width
-  where width = n + m + 1
-quantumize (n, m) (instr : instrs) = quantumize (n, m) instrs <> operation
+quantumize :: (Int, Int) -> [Instr] -> Program
+quantumize _ [] = []
+quantumize (n, m) (instr : instrs) = quantumize (n, m) instrs ++ operation
   where
-    width = n + m + 1
     operation = case instr of
       InstrAND in1 in2 out -> 
-        ccx width (registerToPos n in1) (registerToPos n in2) (registerToPos n out)
+        [Ctrl [registerToPos (n, m) in1, registerToPos (n, m) in2] (registerToPos (n, m) out) X]
       InstrXOR in1 in2 out -> 
-        cx width (registerToPos n in1) (registerToPos n out) <> cx width (registerToPos n in2) (registerToPos n out)
+        [Ctrl [registerToPos (n, m) in1] (registerToPos (n, m) out) X, 
+          Ctrl [registerToPos (n, m) in2] (registerToPos (n, m) out) X]
       InstrNEG input output -> 
-        cx width (registerToPos n input) (registerToPos n output)
+        [Ctrl [registerToPos (n, m) input] (registerToPos (n, m) output) X]
       InstrCopy from to -> 
-        cx width (registerToPos n from) (registerToPos n to)
+        [Ctrl [registerToPos (n, m) from] (registerToPos (n, m) to) X]
