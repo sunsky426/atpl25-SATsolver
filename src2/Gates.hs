@@ -1,4 +1,4 @@
-module Gates2 where
+module Gates where
 
 -- the building bricks of quantum simulation.
 type Pos = Int

@@ -1,6 +1,6 @@
 module Eval where
 
-import Gates2
+import Gates
 import Data.Complex
 import Data.Vector (Vector)
 import qualified Data.Vector as V
@@ -45,5 +45,33 @@ evalGate (Single op pos) tsum =
   map (\(amp,vec) -> 
     (amp,V.modify (\v -> MV.modify v (\v' -> evalOp op v') pos) vec)
   ) tsum
-evalGate (CZ pos) tsum = undefined
+evalGate (CZ pos) tsum =
+  concatMap applyCZTerm tsum
+  where
+    applyCZTerm :: TensorTerm -> TensorSum
+    applyCZTerm (amp, vec) =
+      let
+        -- extract |1> amplitudes on control qubits
+        oneAmps :: [Amplitude]
+        oneAmps = [ snd (vec V.! p) | p <- pos ]
+
+        factor :: Amplitude
+        factor = product oneAmps
+      in
+        if factor ~= zero
+        then
+          [ (amp, vec)
+          , (-2 * amp * factor, forceOnes vec)
+          ]
+        else
+          [ (amp, vec) ]
+
+    forceOnes :: PureTensor -> PureTensor
+    forceOnes =
+      V.modify $ \v ->
+        mapM_ (\p -> MV.write v p (zero, one)) pos
 evalGate (C _ _ _) _ = undefined -- unused for now.
+
+evalProgram :: QP -> Int -> TensorSum
+evalProgram qp n = foldl (flip evalGate) [(zeroTensor n)] qp
+
