@@ -19,4 +19,4 @@ buildPhase (And e1 e2) =
         _ -> [] --error $ "ANF is invalid; " ++ show anf ++ " is not a monomial."
 
 phaseOracle :: Exp -> QP
-phaseOracle = buildPhase . distributeAnd . astToAnf
+phaseOracle = buildPhase . astToAnf

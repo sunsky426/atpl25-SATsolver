@@ -1,9 +1,12 @@
 module Main where
 
+import ANF
 import Comp
+import Gates
 import Grovers
 import Parser
 import PhaseEval
+import PrettyPrinter
 
 main :: IO ()
 main = 
@@ -22,6 +25,5 @@ main =
 
       -- ??? (evaluate grover on an empty state)
       result = evalProgram fullGrover n
-
-      -- profit
-   in putStrLn $ show result
+   in do 
+        putStrLn $ ppTensorSum result
