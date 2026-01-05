@@ -6,7 +6,7 @@ type Pos = Int
 -- Equivalently the below could be something like `data Op = I Pos | X Pos | ...`.
 data Op
   = I | X | Y | Z | H
-  deriving (Show)
+  deriving (Show, Eq)
 
 data QGate
   = Single Op Pos
