@@ -21,22 +21,22 @@ tests =
   testGroup
     "evalTerm"
     [
-      testCase "if ∥⟨0|𝑞𝑐⟩∥^2 = 1 =⇒ ⟨1|𝑞𝑐⟩ = 0" (
+      testCase "if ∥⟨0|qc⟩∥^2 = 1 =⇒ ⟨1|qc⟩ = 0" (
         let pt = PT 1 $ V.fromList [qubit 1 0, qubit 0.3 0.7]
-            res = evalTerm (Ctrl [0] 1 X) pt
+            res = evalTerm (C [0] 1 X) pt
         in assertBool "Tensors not identical" $ compareTensors res [pt]
       ),
 
-      testCase "if ∥⟨1|𝑞𝑐⟩∥^2 = 1 =⇒ ⟨0|𝑞𝑐⟩ = 0" (
+      testCase "if ∥⟨1|qc⟩∥^2 = 1 =⇒ ⟨0|qc⟩ = 0" (
         let pt = PT 1 $ V.fromList [qubit 0 1, qubit 0.3 0.7]
             expectedPT = PT 1 $ V.fromList [qubit 0 1, qubit 0.7 0.3]
-            res = evalTerm (Ctrl [0] 1 X) pt
+            res = evalTerm (C [0] 1 X) pt
         in assertBool "Tensors not identical" $ compareTensors res [expectedPT]
       ),
 
-      testCase "if 𝐺(𝑞𝑡)= 𝑞𝑡" (
+      testCase "if G(qt) = qt" (
         let pt = PT 1 $ V.fromList [qubit 0.5 0.5, qubit 0.5 0.5]
-            res = evalTerm (Ctrl [0] 1 X) pt
+            res = evalTerm (C [0] 1 X) pt
         in assertBool "Tensors not identical" $ compareTensors res [pt]
       )
     ]
