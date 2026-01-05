@@ -9,11 +9,11 @@ import Eval
 
 import Numeric.LinearAlgebra as NL
 
-tensorToStateVector :: Tensor -> NL.Vector CC
+tensorToStateVector :: Tensor -> NL.Vector C
 tensorToStateVector (PT {Eval.scalar = s, qbs} : tl) =
         mul' tl $ outerWithFlatten ((1 |> [s]) * (unQubit . V.head) qbs) $ V.map unQubit $ V.tail qbs
     where
-        outerWithFlatten :: NL.Vector CC -> V.Vector (NL.Vector CC) -> NL.Vector CC
+        outerWithFlatten :: NL.Vector C -> V.Vector (NL.Vector C) -> NL.Vector C
         outerWithFlatten v vs = V.foldl (\a b -> flatten $ outer a b) v vs
         mul' [] res = res
         mul' (PT {Eval.scalar = s, qbs} : rest) res =

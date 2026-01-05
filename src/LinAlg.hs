@@ -1,5 +1,5 @@
 {-# LANGUAGE DerivingStrategies #-}
-module LinAlg(Qubit, qubit, evalSingle, qfst, qsnd, ApproxEq(..), C, (/^), (*^), setQubit) where
+module LinAlg(Qubit, qubit, evalSingle, qfst, qsnd, ApproxEq(..), C, (/^), (*^), setQubit, unQubit) where
 
 import Gates
 import Numeric.LinearAlgebra
@@ -33,6 +33,9 @@ instance ApproxEq (Vector C) where
 
 newtype Qubit = Qubit (Vector C)
   deriving newtype (Num, ApproxEq)
+
+unQubit :: Qubit -> Vector C
+unQubit (Qubit v) = v
 
 instance Show Qubit where
   show qb = "⟨" ++ ppComplex (qfst qb) ++ " ," ++ ppComplex (qsnd qb) ++ "⟩"
