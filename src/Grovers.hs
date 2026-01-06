@@ -10,7 +10,7 @@ import Gates
 
 -- diffussion step (reflect across the equal superposition vector)
 diffusion :: CircuitWidth -> Program
-diffusion width = pow H width ++ pow X width ++ [Ctrl [0..width-2] (width-1) Z] ++ pow X width ++ pow H width
+diffusion width = pow H width ++ pow X width ++ [MCZ [0..width-1]] ++ pow X width ++ pow H width
 
 -- grovers algorithm (n should be equal to floor(sqrt(N/M)), find M using the quantum counting algorithm)
 grovers :: CircuitWidth -> Program -> Int -> Program

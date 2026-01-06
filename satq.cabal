@@ -21,13 +21,11 @@ executable SATQ
     other-modules:    AST,
                       Generator,
                       Parser,
-                      Quantumize,
                       Grovers,
                       ProgramInversion,
                       Macros,
                       Eval,
                       Gates,
-                      LinAlg,
                       Measure
     -- other-extensions:
     build-depends:    base ^>=4.18.2.1,
