@@ -1,5 +1,5 @@
 {-# LANGUAGE DerivingStrategies #-}
-module LinAlg(Qubit, qubit, evalSingle, qfst, qsnd, ApproxEq(..), C, (/^), (*^), setQubit) where
+module LinAlg(Qubit, qubit, evalSingle, qfst, qsnd, ApproxEq(..), C, (/^), (*^), setQubit, ppComplex) where
 
 import Gates
 import Numeric.LinearAlgebra

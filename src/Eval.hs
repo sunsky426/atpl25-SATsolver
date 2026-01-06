@@ -2,7 +2,7 @@
 module Eval where
 
 import Gates
-import LinAlg (evalSingle, qfst, qsnd, qubit, ApproxEq(..), C, Qubit, setQubit)
+import LinAlg (evalSingle, qfst, qsnd, qubit, ApproxEq(..), C, Qubit, setQubit, ppComplex)
 import qualified LinAlg as LA
 import qualified Data.Vector as V
 import Macros
@@ -103,10 +103,9 @@ pureTensorSimp pt1@(PT z1 v1) pt2@(PT z2 v2) =
         -- if the puretensors are equal up to a scalar, then just sum the scalars (rule 3)
       1 -> do
         firstFalseIndex <- V.findIndex not isEq
-        quotient <- (pt2 ! firstFalseIndex) LA./^ (pt1 ! firstFalseIndex)
-        Just $ PT (z1 + quotient * z2) v1
-        -- if the puretensors are equal up to a scalar except for one factor. 
-        -- Then we see if the factor in question are equal up to a scalar k. If so, factor k to the front and then sum the scalars.
+        let (q1, q2) = (v1 V.! firstFalseIndex, v2 V.! firstFalseIndex)
+        Just $ PT 1 (v1 V.// [(firstFalseIndex, z1 LA.*^ q1 + z2 LA.*^ q2)])
+        -- if the puretensors are equal up to a scalar except for one entry k. then combine the entry using z1 * v1_i + z2 + v2_i 
       _ -> Nothing
 
 -- Utility Functions
@@ -133,7 +132,7 @@ pp (pt: pt' : pts) = do
   pp (pt' : pts)
 
 ppPT :: PureTensor -> String
-ppPT (PT z v) = show z ++ "*" ++ V.foldl1 (\acc str -> acc ++ "⊗" ++ str) (V.map show v)
+ppPT (PT z v) = ppComplex z ++ "*" ++ V.foldl1 (\acc str -> acc ++ "⊗" ++ str) (V.map show v)
 
 -- evaluate Program by parts so I see what happens when it stalls
 evalByParts :: Int -> Program -> Tensor -> IO Tensor
@@ -141,6 +140,6 @@ evalByParts _ [] t = pure t
 evalByParts n prog t = do
     let prog1 = take n prog
     let t' = evalProgram prog1 t
-    putStrLn $ show (length t') ++ ","
-    -- pp t'
+    putStrLn $ show (length t') ++ "," ++ show (last prog1)
+    pp t'
     evalByParts n (drop n prog) t'
