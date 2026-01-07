@@ -8,6 +8,7 @@ import Eval
 import Macros 
 import Gates
 import Measure
+import Validation
 
 main :: IO ()
 main = 
