@@ -70,10 +70,10 @@ applyGate gate pt@(PT alph qbs) =
       tqb <- VM.read qbs (fromInteger target)
       l <- Prelude.mapM (VM.read qbs) $ S.toList control_set
       let res = evalSingle op tqb
-      if res ~= tqb || (~= 0) (L.foldl (\acc q -> acc * qsnd q) 1 l) then return Nothing
+      if res ~= tqb || (~= 1) (L.foldl (\acc q -> acc * qfst q) 1 l) then return Nothing
       else
-        case L.foldl (\acc q -> acc * qfst q) 1 l of
-        beta | beta ~= 0 -> do
+        case L.foldl (\acc q -> acc * qsnd q) 1 l of
+        beta | beta ~= 1 -> do
           VM.modify qbs (evalSingle op) (fromInteger target)
           return Nothing
         beta -> do
