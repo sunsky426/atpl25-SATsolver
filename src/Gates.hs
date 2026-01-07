@@ -1,17 +1,20 @@
 module Gates where
 
 -- the building bricks of quantum simulation.
-type Pos = Int
+type QubitPos = Int
 
--- Equivalently the below could be something like `data Op = I Pos | X Pos | ...`.
-data Op
-  = I | X | Y | Z | H
-  deriving (Show)
+type CircuitWidth = Int
 
-data QGate
-  = Single Op Pos
-  | C [Pos] Pos Op -- unnecessary, desprecated. `C [Pos] Op Pos` is also cleaner imo.
-  | CZ [Pos]
-  deriving (Show)
+data SingleGate
+  = X | H
+  deriving(Show)
 
-type QP = [QGate]
+data Gate 
+  = Only QubitPos SingleGate
+  | MCZ [QubitPos]
+  deriving(Show)
+
+type Program = [Gate]
+
+pow :: SingleGate -> Int -> Program
+pow gate n = map (`Only` gate) [0..n-1]
