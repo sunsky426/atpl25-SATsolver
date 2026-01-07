@@ -1,5 +1,5 @@
 {-# LANGUAGE DerivingStrategies #-}
-module LinAlg(Qubit, qubit, evalSingle, qfst, qsnd, ApproxEq(..), C, (/^), (*^), setQubit, unQubit) where
+module LinAlg(Qubit, qubit, evalSingle, qfst, qsnd, ApproxEq(..), C, (/^), (*^), setQubit, ppComplex, unQubit) where
 
 import Gates
 import Numeric.LinearAlgebra
@@ -62,6 +62,9 @@ qsnd (Qubit v) = v ! 1
 
 setQubit :: (C -> C) -> (C -> C) -> Qubit -> Qubit
 setQubit f g qb = Qubit $ 2 |> [f (qfst qb), g (qsnd qb)]
+
+unQubit :: Qubit -> Vector C
+unQubit (Qubit v) = v
 
 ii :: C
 ii = 0 :+ 1

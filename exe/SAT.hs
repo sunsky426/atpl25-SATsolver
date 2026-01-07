@@ -3,27 +3,36 @@ module Main where
 import ANF
 import Comp
 import Gates
-import Grovers
-import Parser
-import PhaseEval
-import PrettyPrinter
+import Measure
+import Validation
 
 main :: IO ()
 main = 
   let 
-      -- obtain input - substitute appropriate input stream later
-      example = "(~p & q) | (t & ~p)"
+      -- -- obtain input - substitute appropriate input stream later
+      -- example = "p & q | (123 & ~123) & ( (x ^ y) ^ z)"
+      -- n = 6
 
-      -- parse input
-      (bexp,n) = parseWithUnique example
+      -- -- parse input
+      -- bexp = 
+      --   case parse example of
+      --     Right x  -> x
+      --     Left err -> error err
 
-      -- create boolean (phase)oracle
-      oracle = phaseOracle bexp
+      -- -- quantumize boolean expression
+      -- (instrs,m) = compile bexp
+      -- qop = quantumize (n,m) instrs
 
       -- apply Grover's algorithm
-      fullGrover = grover oracle n
+      -- width = n + m + 1
+      iterations = 5
+      width = 3
 
-      -- ??? (evaluate grover on an empty state)
-      result = evalProgram fullGrover n
-   in do 
-        putStrLn $ ppTensorSum result
+      oracle = [Only 0 X, Only 2 X, Ctrl [0, 1] 2 Z, Only 2 X, Only 0 X]
+      groversCircuit = grovers width oracle iterations
+
+      -- ???
+      -- h = evalProgram (pow H width) (zero width)
+      result = evalByParts 1 groversCircuit (zero width)
+      -- profit
+   in print . vectorize =<< result
