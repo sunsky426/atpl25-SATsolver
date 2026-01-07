@@ -1,4 +1,4 @@
-module Parser ( parse, ) where
+module Parser ( parse, parseWithUnique, ) where
 
 import AST
 import Data.Char (isAlphaNum)
@@ -115,6 +115,10 @@ parseAtom :: Parser Exp
 parseAtom = choice
   [
     do
+      lString "~"
+      x <- parseAtom
+      pure $ NEG x,
+    do
       x <- tVar
       pure $ Var x,
     lString "(" *> parseExp <* lString ")"
@@ -123,10 +127,6 @@ parseAtom = choice
 parseExp :: Parser Exp
 parseExp = choice
   [
-    do
-      lString "~"
-      x <- parseAtom
-      pure $ NEG x,
     do
       x <- parseAtom
       lString "&"
@@ -146,8 +146,14 @@ parseExp = choice
   ]
 
 
-parse :: String -> Either Error Exp
+parse :: String -> Exp
 parse s = 
   case runParser (parseExp <* eof) (s,initTable) of
-    Right (_,res) -> Right res
-    Left err      -> Left err
+    Right (_,res) -> res
+    Left err      -> error err
+
+parseWithUnique :: String -> (Exp, Int)
+parseWithUnique s =
+  case runParser (parseExp <* eof) (s,initTable) of
+    Right ((_,vt),res) -> (res,length vt)
+    Left err -> error err

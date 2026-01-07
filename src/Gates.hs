@@ -1,14 +1,17 @@
 module Gates where
 
-type QubitPos = Int
+-- the building bricks of quantum simulation.
+type Pos = Int
 
-data SingleGate
+-- Equivalently the below could be something like `data Op = I Pos | X Pos | ...`.
+data Op
   = I | X | Y | Z | H
-  deriving(Show)
+  deriving (Show)
 
-data Gate 
-  = Only QubitPos SingleGate
-  | Ctrl [QubitPos] QubitPos SingleGate
-  deriving(Show)
+data QGate
+  = Single Op Pos
+  | C [Pos] Pos Op -- unnecessary, desprecated. `C [Pos] Op Pos` is also cleaner imo.
+  | CZ [Pos]
+  deriving (Show)
 
-type Program = [Gate]
+type QP = [QGate]

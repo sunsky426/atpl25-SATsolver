@@ -34,6 +34,9 @@ instance ApproxEq (Vector C) where
 newtype Qubit = Qubit (Vector C)
   deriving newtype (Num, ApproxEq)
 
+unQubit :: Qubit -> Vector C
+unQubit (Qubit v) = v
+
 instance Show Qubit where
   show qb = "⟨" ++ ppComplex (qfst qb) ++ " ," ++ ppComplex (qsnd qb) ++ "⟩"
 
@@ -73,7 +76,7 @@ ii = 0 :+ 1
 -- toQubit v = Qubit (v ! 0) (v ! 1)
 
 -- evaluates the effect of a single gate on a single qubit useing Matrix Semantics (I copied this from James)
-evalSingle  :: SingleGate -> Qubit -> Qubit
+evalSingle  :: Op -> Qubit -> Qubit
 evalSingle gate (Qubit qb) = Qubit $ mat #> qb
   where
     mat = case gate of

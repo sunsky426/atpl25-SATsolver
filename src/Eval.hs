@@ -5,7 +5,6 @@ import Gates
 import LinAlg (evalSingle, qfst, qsnd, qubit, ApproxEq(..), C, Qubit, setQubit, ppComplex)
 import qualified LinAlg as LA
 import qualified Data.Vector as V
-import Macros
 
 -- type definations
 
@@ -40,15 +39,12 @@ instance ApproxEq Tensor where
 zero :: Int -> Tensor
 zero dim = [PT 1 $ V.replicate dim (qubit 1 0)]
 
-hadamard :: Int -> Tensor
-hadamard dim = evalProgram (pow H dim) (zero dim)
-
 -- apply all gates in a program sequentiall (via fold)
-evalProgram :: Program -> Tensor -> Tensor
+evalProgram :: QP -> Tensor -> Tensor
 evalProgram program tensor = foldl (flip evalGate) tensor program
 
 -- distributes a gate over addition to all pure tensors in a tensor
-evalGate :: Gate -> Tensor -> Tensor
+evalGate :: QGate -> Tensor -> Tensor
 evalGate gate = fixpoint tensorSimp . concatMap (evalTerm gate)
 
 -- evaluates a gate on a pure tensor, using LinAlg Module
@@ -65,7 +61,7 @@ evalTerm (Ctrl ctrls target Z) qbs =
           updates = repeat $ const $ qubit 0 1
           correction = ((-2 * beta) *^ qbs) // zip pos updates
 
-evalTerm (Ctrl ctrls target gate) qbs =
+evalTerm (C ctrls target gate) qbs =
   case product $ [qsnd (qbs ! i) | i <- ctrls] of
     0 -> [qbs] -- if beta = 0, there is no correction
     1 -> [qbs // [(target, evalSingle gate)]]
@@ -131,7 +127,7 @@ ppPT :: PureTensor -> String
 ppPT (PT z v) = ppComplex z ++ "*" ++ V.foldl1 (\acc str -> acc ++ "⊗" ++ str) (V.map show v)
 
 -- evaluate Program by parts so I see what happens when it stalls
-evalByParts :: Int -> Program -> Tensor -> IO Tensor
+evalByParts :: Int -> QP -> Tensor -> IO Tensor
 evalByParts _ [] t = pure t
 evalByParts n prog t = do
     let prog1 = take n prog

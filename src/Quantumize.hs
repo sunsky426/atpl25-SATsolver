@@ -45,7 +45,7 @@ compile' (AND e1 e2) = do
   out <- alloc
   emit [InstrAND in1 in2 out]
   pure out
-compile' (OR e1 e2) = compile' $ elimORwXOR $ OR e1 e2
+compile' (OR e1 e2) = compile' $ elimORwMorgan $ OR e1 e2
 compile' (XOR e1 e2) = do
   in1 <- compile' e1
   in2 <- compile' e2
@@ -78,16 +78,17 @@ registerToPos _ (Input i) = i + 1
 registerToPos (n, _m) (Ancilla i) = n + i
 
 -- convert internal language to quantum circuit
-quantumize :: (Int, Int) -> [Instr] -> Program
+quantumize :: (Int, Int) -> [Instr] -> QP
 quantumize _ [] = []
 quantumize (n, m) (instr : instrs) = quantumize (n, m) instrs ++ operation
   where
     operation = case instr of
       InstrAND in1 in2 out -> 
-        [Ctrl [registerToPos (n, m) in1, registerToPos (n, m) in2] (registerToPos (n, m) out) X]
+        [C [registerToPos (n, m) in1, registerToPos (n, m) in2] (registerToPos (n, m) out) X]
       InstrXOR in1 in2 out -> 
-        [Ctrl [registerToPos (n, m) in1] (registerToPos (n, m) out) X, Ctrl [registerToPos (n, m) in2] (registerToPos (n, m) out) X]
+        [C [registerToPos (n, m) in1] (registerToPos (n, m) out) X, 
+          C [registerToPos (n, m) in2] (registerToPos (n, m) out) X]
       InstrNEG input output -> 
-        [Ctrl [registerToPos (n, m) input] (registerToPos (n, m) output) X]
+        [C [registerToPos (n, m) input] (registerToPos (n, m) output) X]
       InstrCopy from to -> 
-        [Ctrl [registerToPos (n, m) from] (registerToPos (n, m) to) X]
+        [C [registerToPos (n, m) from] (registerToPos (n, m) to) X]

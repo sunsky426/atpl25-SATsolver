@@ -1,11 +1,7 @@
 module Main where
 
-import Parser
-import Quantumize
-import Grovers
-import Generator
-import Eval
-import Macros 
+import ANF
+import Comp
 import Gates
 import Measure
 import Validation

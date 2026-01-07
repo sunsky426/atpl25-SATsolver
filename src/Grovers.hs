@@ -1,34 +1,23 @@
-module Grovers(grovers, countQ) where
+module Grovers where
 
-import Programs.QFT
-import Macros
 import Gates
 
--- make oracle a phase oracle (flip sign if solution) WRONG
--- prepareOracle :: CircuitWidth -> Program
--- prepareOracle width = map (\i -> Ctrl [0] i X) [1..width-1]
+pow :: Op -> Int -> QP
+pow op i = map (Single op) [0..i-1]
 
--- diffussion step (reflect across the equal superposition vector)
-diffusion :: CircuitWidth -> Program
-diffusion width = pow H width ++ pow X width ++ [Ctrl [0..width-2] (width-1) Z] ++ pow X width ++ pow H width
+diffusion :: Int -> QP
+diffusion n =
+  pow H n ++
+  pow X n ++
+  [CZ [0..n-1]] ++
+  pow X n ++
+  pow H n
 
--- grovers algorithm (n should be equal to floor(sqrt(N/M)), find M using the quantum counting algorithm)
-grovers :: CircuitWidth -> Program -> Int -> Program
-grovers width oracle n = pow H width ++ concat (replicate n (oracle ++ diffusion width))
+groverIteration :: QP -> QP -> Int -> QP
+groverIteration oracle diffuser 1 = oracle ++ diffuser
+groverIteration oracle diffuser n =
+  oracle ++ diffuser ++ groverIteration oracle diffuser (n-1)
 
--- quantum counting algorithm
-countQ :: CircuitWidth -> Program -> Int -> Program
-countQ width oracle = estimatePhase (pow H width) oracle width
-
--- quantum phase estimation algorithm
-estimatePhase :: Program -> Program -> Int -> Int -> Program
--- estimatePhase eigenVector linTrans n m =
---   (foldl (>:) (pow H m <.> eigenVector) [step i | i <- [0..m-1]]) >: iQFT width
---     where
---       width = n + m
---       step i = swap width (i, m) >: pow I (m-1) <.> repeatQ (C linTrans) i >: swap width (i, m)
-estimatePhase = undefined
-
--- inverse quantum fourier transform
-iQFT :: CircuitWidth -> Program
-iQFT width = undefined
+grover :: QP -> Int -> QP
+grover oracle n =
+  pow H n ++ groverIteration oracle (diffusion n) (floor (pi / 4.0 * sqrt(2 ^ n)))
