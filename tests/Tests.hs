@@ -4,6 +4,10 @@ import AST
 import ANF
 import Verif
 import Test.QuickCheck
+import Eval (evalProgram, zero)
+import Measure (vectorize, greedyMeasure, toBin)
+import Grovers (grovers)
+import Gates (CircuitWidth)
 
 maxVar :: Exp -> Int
 maxVar (Atom (Var n)) = n
@@ -22,3 +26,18 @@ exp2anfTest e =
     \bs -> case exp2anf e of
       Nothing -> False
       Just anf -> verif e bs == verifANF anf bs
+
+groverTest :: Exp -> Property
+groverTest e = 
+  let width = maxVar e + 1
+  in width /= 0 ==> property $
+    case runGrover width e of
+      Nothing -> False
+      Just solution -> verif e solution
+
+runGrover :: CircuitWidth -> Exp -> Maybe BitString
+runGrover width e = do
+  oracle <- anf2oracle <$> exp2anf e
+  let groversCircuit = grovers width oracle 1
+  let solution = toBin $ greedyMeasure $ vectorize $ evalProgram groversCircuit (zero width)
+  pure solution

@@ -6,11 +6,5 @@ import Gates
 diffusion :: CircuitWidth -> Program
 diffusion width = pow H width ++ pow X width ++ [MCZ [0..width-1]] ++ pow X width ++ pow H width
 
-groverIteration :: Program -> Program -> Int -> Program
-groverIteration oracle diffuser 1 = oracle ++ diffuser
-groverIteration oracle diffuser n =
-  oracle ++ diffuser ++ groverIteration oracle diffuser (n-1)
-
-grovers :: Program -> CircuitWidth -> Program
-grovers oracle n =
-  pow H n ++ groverIteration oracle (diffusion n) (floor (pi / 4.0 * sqrt(2 ^ n)))
+grovers :: CircuitWidth -> Program -> Int -> Program -- groversCuircuit that does infinite iterations, just take as much as you need
+grovers width oracle iterations = pow H width ++ concat (replicate iterations (oracle ++ diffusion width))

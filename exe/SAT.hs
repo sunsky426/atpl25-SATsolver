@@ -1,6 +1,6 @@
 module Main where
 
-import Parser
+-- import Parser
 import Grovers
 import Eval
 import Gates
@@ -10,9 +10,10 @@ main :: IO ()
 main = 
   let 
       width = 4
+      iterations = 1
 
       oracle = [MCZ [0, 1], MCZ [1, 2], MCZ [1, 2, 3]]
-      groversCircuit = grovers oracle width
+      groversCircuit = grovers width oracle iterations
 
       -- ???
       -- h = evalProgram (pow H width) (zero width)
