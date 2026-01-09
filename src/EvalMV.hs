@@ -90,10 +90,10 @@ simpPureTensorQ (PT _ qbs1) (PT s2 qbs2) = do
       -- simplify if puretensors are equal up to scalar
       [] -> return $ Just s2
       -- simplify if equal up to a scalar except one factor
-      -- [i] -> do
-      --   val1 <- VM.read qbs1 i
-      --   val2 <- VM.read qbs2 i
-      --   return $ (* s2) <$> val1 /^ val2
+      [i] -> do
+        val1 <- VM.read qbs1 i
+        val2 <- VM.read qbs2 i
+        return $ (* s2) <$> val2 /^ val1
       _ -> return Nothing
 
 simpTensor :: TensorMV s -> ST s (TensorMV s)
