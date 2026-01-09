@@ -29,7 +29,9 @@ library
                       LinAlg,
                       Comp,
                       Transform,
+                      EvalMV,
                       Eval_Tests,
+                      StateVector
                       -- MV_Tests
     -- other-extensions:
     build-depends:    base ^>=4.18.2.1,
@@ -60,9 +62,9 @@ executable SATQ
                       src,
     default-language: GHC2021
 
-executable eval
+executable grover
     import:           warnings
-    main-is:          mv.hs
+    main-is:          grover.hs
     -- other-extensions:
     build-depends:    base ^>=4.18.2.1,
                       mtl,
