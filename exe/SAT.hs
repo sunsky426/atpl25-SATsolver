@@ -5,19 +5,20 @@ import Comp
 import Gates
 import Measure
 import Validation
+import StateVector
+import Parser
 
 main :: IO ()
 main = 
   let 
       -- -- obtain input - substitute appropriate input stream later
-      -- example = "p & q | (123 & ~123) & ( (x ^ y) ^ z)"
-      -- n = 6
+      example = "(a & b) ^ (b & c)"
 
       -- -- parse input
-      -- bexp = 
-      --   case parse example of
-      --     Right x  -> x
-      --     Left err -> error err
+      (bexp,) = 
+        case parseWithUnique example of
+          Right x  -> x
+          Left err -> error err
 
       -- -- quantumize boolean expression
       -- (instrs,m) = compile bexp
@@ -34,5 +35,6 @@ main =
       -- ???
       -- h = evalProgram (pow H width) (zero width)
       result = evalByParts 1 groversCircuit (zero width)
+
       -- profit
    in print . vectorize =<< result

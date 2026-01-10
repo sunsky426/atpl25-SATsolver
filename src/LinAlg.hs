@@ -63,9 +63,6 @@ qsnd (Qubit v) = v ! 1
 setQubit :: (C -> C) -> (C -> C) -> Qubit -> Qubit
 setQubit f g qb = Qubit $ 2 |> [f (qfst qb), g (qsnd qb)]
 
-unQubit :: Qubit -> Vector C
-unQubit (Qubit v) = v
-
 ii :: C
 ii = 0 :+ 1
 

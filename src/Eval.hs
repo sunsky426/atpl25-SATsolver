@@ -49,9 +49,9 @@ evalGate gate = fixpoint tensorSimp . concatMap (evalTerm gate)
 
 -- evaluates a gate on a pure tensor, using LinAlg Module
 evalTerm :: Gate -> PureTensor -> Tensor
-evalTerm (Only pos gate) qbs = pure $ qbs // [(pos, evalSingle gate)]
+evalTerm (Single gate pos) qbs = pure $ qbs // [(pos, evalSingle gate)]
 
-evalTerm (Ctrl ctrls target Z) qbs =
+evalTerm (C ctrls target Z) qbs =
   let pos = target : ctrls in
     case product $ [qsnd (qbs ! i) | i <- pos] of
       0 -> [qbs] -- if beta = 0, there is no correction
@@ -60,16 +60,6 @@ evalTerm (Ctrl ctrls target Z) qbs =
         where
           updates = repeat $ const $ qubit 0 1
           correction = ((-2 * beta) *^ qbs) // zip pos updates
-
-evalTerm (C ctrls target gate) qbs =
-  case product $ [qsnd (qbs ! i) | i <- ctrls] of
-    0 -> [qbs] -- if beta = 0, there is no correction
-    1 -> [qbs // [(target, evalSingle gate)]]
-    beta -> [qbs, correction] -- calculate correction for non-zero beta
-      where
-        targetUpdate q = evalSingle gate q - q
-        ctrlUpdates = repeat $ const $ qubit 0 1
-        correction = (beta *^ qbs) // zip (target : ctrls) (targetUpdate : ctrlUpdates)
 
 tensorSimp :: Tensor -> Tensor
 tensorSimp tensor = f tensor simpUpdates

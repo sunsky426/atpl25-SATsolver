@@ -25,6 +25,7 @@ validate bexp ass =
     XOR e1 e2 -> validateBoth e1 e2 (/=)
     NEG e     -> not (validate e ass)
     Var index -> ass !! index
+    Const bool-> bool
   where
     validateBoth e1 e2 f = f (validate e1 ass) (validate e2 ass)
 
