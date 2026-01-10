@@ -72,7 +72,8 @@ executable grover
                       random,
                       hmatrix,
                       vector,
-                      containers
+                      containers,
+                      criterion
     hs-source-dirs:   exe,
     default-language: GHC2021
 

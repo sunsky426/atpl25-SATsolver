@@ -9,7 +9,8 @@ import EvalMV
 import Numeric.LinearAlgebra as NL
 import Debug.Trace (trace)
 
-prob l = (sqrt . abs . unQubit)
+getBest (_ : PTIV s qbs : _) =
+  L.concatMap (\q -> if (abs $ realPart $ qfst q) > (abs $ realPart $ qsnd q) then "0" else "1") qbs
 
 tensorToStateVector :: [PureTensorIV] -> NL.Vector C
 tensorToStateVector pt = trace (show $ L.length pt) $ tensorToStateVector' pt
