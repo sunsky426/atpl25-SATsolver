@@ -84,15 +84,18 @@ applyGate gate pt@(PT alph qbs) =
 
 simpPureTensorQ :: PureTensorMV s -> PureTensorMV s -> ST s (Maybe C)
 simpPureTensorQ (PT _ qbs1) (PT s2 qbs2) = do
-    v1 <- V.freeze qbs1
-    v2 <- V.freeze qbs2 -- find more optimale
-    case V.toList $ V.findIndices id $ V.zipWith (\x y -> not (x ~= y)) v1 v2 of
+
+    d <- Prelude.sequence [ do
+           val1 <- VM.read qbs1 i
+           val2 <- VM.read qbs2 i
+           return (val1, val2)
+           | i <- [0 .. VM.length qbs1 -1]]
+
+    case L.filter (\(val1, val2) -> not (val1 ~= val2)) d of
       -- simplify if puretensors are equal up to scalar
       [] -> return $ Just s2
       -- simplify if equal up to a scalar except one factor
-      [i] -> do
-        val1 <- VM.read qbs1 i
-        val2 <- VM.read qbs2 i
+      [(val1, val2)] -> do
         return $ (* s2) <$> val2 /^ val1
       _ -> return Nothing
 
