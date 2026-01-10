@@ -1,27 +1,40 @@
 module Main where
 
+import ANF
 import Comp
-import Grovers
+import Gates
+import Measure
+import Validation
+import StateVector
 import Parser
-import PhaseEval
 
 main :: IO ()
 main = 
   let 
-      -- obtain input - substitute appropriate input stream later
-      example = "(~p & q) | (t & ~p)"
+      -- -- obtain input - substitute appropriate input stream later
+      example = "(a & b) ^ (b & c)"
 
-      -- parse input
-      (bexp,n) = parseWithUnique example
+      -- -- parse input
+      (bexp,) = 
+        case parseWithUnique example of
+          Right x  -> x
+          Left err -> error err
 
-      -- create boolean (phase)oracle
-      oracle = phaseOracle bexp
+      -- -- quantumize boolean expression
+      -- (instrs,m) = compile bexp
+      -- qop = quantumize (n,m) instrs
 
       -- apply Grover's algorithm
-      fullGrover = grover oracle n
+      -- width = n + m + 1
+      iterations = 5
+      width = 3
 
-      -- ??? (evaluate grover on an empty state)
-      result = evalProgram fullGrover n
+      oracle = [Only 0 X, Only 2 X, Ctrl [0, 1] 2 Z, Only 2 X, Only 0 X]
+      groversCircuit = grovers width oracle iterations
+
+      -- ???
+      -- h = evalProgram (pow H width) (zero width)
+      result = evalByParts 1 groversCircuit (zero width)
 
       -- profit
-   in putStrLn $ show result
+   in print . vectorize =<< result

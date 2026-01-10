@@ -33,6 +33,11 @@ library
                       Eval_Tests,
                       StateVector
                       -- MV_Tests
+                      Eval_Tests,
+                      Verif,
+                      Tensors,
+                      Measure,
+                      Validation
     -- other-extensions:
     build-depends:    base ^>=4.18.2.1,
                       mtl,

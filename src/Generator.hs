@@ -1,7 +1,12 @@
-module Generator (gen) where
+module Generator (gen,genMany) where
 
 import AST
 import System.Random
+
+genMany :: Int -> Int -> Int -> [Exp]
+genMany seed n size
+  | n <= 1 = [gen seed size]
+  | otherwise = gen seed size : genMany (seed+1) (n-1) size
 
 gen :: Int -> Int -> Exp
 gen seed size = fst (genExp size (mkStdGen seed))
