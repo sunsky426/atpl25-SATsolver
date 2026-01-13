@@ -13,7 +13,7 @@ getBest (_ : PTIV s qbs : _) =
   L.concatMap (\q -> if (abs $ realPart $ qfst q) > (abs $ realPart $ qsnd q) then "0" else "1") qbs
 
 tensorToStateVector :: [PureTensorIV] -> NL.Vector C
-tensorToStateVector pt = trace (show $ L.length pt) $ tensorToStateVector' pt
+tensorToStateVector pt = tensorToStateVector' pt
   where
     tensorToStateVector' [] = 0
     tensorToStateVector' pt@(PTIV s qbs : t) =

@@ -11,7 +11,11 @@ import Data.Vector as V
 import Data.List as L
 import Data.Set as S
 import Control.Monad.ST
+import Debug.Trace
+import Numeric.LinearAlgebra as NL
+import StateVector (tensorToStateVector)
 
+comparePureTensors :: PureTensorIV -> PureTensorIV -> Bool
 comparePureTensors (PTIV {scalarIV = scalar1, qbsIV = qbs1}) (PTIV {scalarIV = scalar2, qbsIV = qbs2}) =
   scalar1 == scalar2 && V.all (uncurry (~=)) (V.zip qbs1 qbs2)
 
@@ -27,8 +31,36 @@ evalPureTensors circuit pts = runST evaluator
 
 tests :: TestTree
 tests =
-  testGroup 
+  testGroup
     "EvalMV" [
+      testGroup
+        "Evaluation of gates"
+        [
+          testCase "Applying single qubit gates" (
+            let qbl = [qubit 1 0, qubit (sqrt 0.5) (-(sqrt 0.5)), qubit (sqrt 0.5) (sqrt 0.5)]
+                res = eval [
+                  Sing H (S.fromList [0, 1, 2]),
+                  Sing Z (S.fromList [0, 1, 2]),
+                  Sing X (S.fromList [0, 1, 2])
+                  ] 1 qbl
+                expected = [PTIV 1 (V.fromList [qubit (-(sqrt 0.5)) (sqrt 0.5), qubit (-1) 0, qubit 0 1])]
+            in assertBool "Tensors not identical" $ compareTensors res expected
+          ),
+          testCase "Applying control gates" (
+            let qbl = [qubit (sqrt 0.5) (sqrt 0.5), qubit (sqrt 0.3) (sqrt 0.7)]
+                res = eval [
+                    Ctrl X (S.fromList [0]) 1
+                  ] 1 qbl
+                diff = evalSingle X (qbl !! 1) - (qbl !! 1)
+                gamma = sqrt $ dot (unQubit diff) (unQubit diff)
+                expected = [
+                    PTIV 1 (V.fromList qbl),
+                    PTIV (sqrt 0.5 * gamma) (V.fromList [qubit 0 1, qubit (sqrt 0.5) (-(sqrt 0.5))])
+                  ]
+            in assertBool "Tensors not identical" $ compareTensors res expected
+          )
+        ],
+
       testGroup
         "Scaled pure tensors simplification"
         [
@@ -60,7 +92,7 @@ tests =
                 expected = [PTIV (-2) (V.fromList [qubit (sqrt 0.8) (sqrt 0.2), qubit 0 (-1)])]
                 res = evalPureTensors [] pts
             in assertBool "Tensors not identical" $ compareTensors res expected
-          )    
+          )
         ],
       testGroup
         "Control gate simplification rules"
@@ -74,7 +106,7 @@ tests =
 
           testCase "Always apply control-gate if control bits are 1" (
             let qbl = [qubit 0 1, qubit 0 1, qubit 0.3 0.7]
-                expected = [PTIV 1 $ V.fromList [qubit 0 1, qubit 0 1, qubit 0.7 0.3]] 
+                expected = [PTIV 1 $ V.fromList [qubit 0 1, qubit 0 1, qubit 0.7 0.3]]
                 res = eval [Ctrl X (S.fromList [0, 1]) 2] 1 qbl
             in assertBool "Tensors not identical" $ compareTensors res expected
           ),
@@ -85,32 +117,26 @@ tests =
                 res = eval [Ctrl X (S.fromList [0, 1]) 2] 1 qbl
             in assertBool "Tensors not identical" $ compareTensors res expected
           )
-
-          -- testCase "Always apply control-gate if control bits are 1" (
-          --   let pt = PT 1 $ V.fromList [qubit 0 1, qubit 0 1 qubit 0.3 0.7]
-          --       expected = PT 1 $ V.fromList [qubit 0 1, qubit 0 1 qubit 0.7 0.3] 
-          --       res = eval (Ctrl (S.fromList [0]) 1 X) 1 pt
-          --   in assertBool "Tensors not identical" $ compareTensors res [pt]
-          -- ),
-
-          -- testCase "if ∥⟨1|qc⟩∥^2 = 1 =⇒ ⟨0|qc⟩ = 0" (
-          --   let pt = PT 1 $ V.fromList [qubit 0 1, qubit 0.3 0.7]
-          --       expectedPT = PT 1 $ V.fromList [qubit 0 1, qubit 0.7 0.3]
-          --       res = evalTerm (C [0] 1 X) pt
-          --   in assertBool "Tensors not identical" $ compareTensors res [expectedPT]
-          -- ),
-
-          -- testCase "if G(qt) = qt" (
-          --   let pt = PT 1 $ V.fromList [qubit 0.5 0.5, qubit 0.5 0.5]
-          --       res = evalTerm (C [0] 1 X) pt
-          --   in assertBool "Tensors not identical" $ compareTensors res [pt]
-          -- ),
-
-          -- testCase "𝛼 · (𝑞1 ⊗ . . . ⊗ 𝑞𝑛) + 𝛽 · (𝑞1 ⊗ . . . ⊗ 𝑞𝑛) = (𝛼 + 𝛽) · (𝑞1 ⊗ . . . ⊗ 𝑞𝑛)" (
-          --   let pt = [PT 1 $ V.fromList [qubit 0.5 0.5, qubit 0.5 0.5], PT 1 $ V.fromList [qubit 0.5 0.5, qubit 0.5 0.5]]
-          --       exptected = [PT 2 $ V.fromList [qubit 0.5 0.5, qubit 0.5 0.5]] 
-          --       res = evalProgram [C [0] 1 X] pt
-          --   in assertBool "Tensors not identical" $ compareTensors res exptected
-          -- )
+        ],
+      testGroup
+        "Misc"
+        [
+          testCase "Order does not matter when gates are independent" (
+            let qbl = [qubit (sqrt 0.5) (sqrt 0.5) | _ <- [0 .. 5]]
+                circuit = [
+                    Ctrl Z (S.fromList [0 .. 4]) 5,
+                    Ctrl Z (S.fromList [0 .. 3]) 5,
+                    Ctrl Z (S.fromList [0 .. 2]) 5,
+                    Ctrl Z (S.fromList [0 .. 1]) 5,
+                    Ctrl Z (S.fromList [0]) 5
+                  ]
+                res1 = eval circuit 1 qbl
+                res2 = eval (L.reverse circuit) 1 qbl
+                round' x = round $ realPart x * 1000000
+            in
+              assertBool "Number of pure tensors and result is the same" $ L.length res1 == L.length res2 && L.map round' (NL.toList $ tensorToStateVector res1) == L.map round' (NL.toList $ tensorToStateVector res2)
+          )
         ]
+
+
     ]
