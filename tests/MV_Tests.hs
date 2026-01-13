@@ -47,15 +47,15 @@ tests =
             in assertBool "Tensors not identical" $ compareTensors res expected
           ),
           testCase "Applying control gates" (
-            let qbl = [qubit (sqrt 0.5) (sqrt 0.5), qubit (sqrt 0.3) (sqrt 0.7)]
+            let qbl = [qubit (sqrt 0.5) (sqrt 0.5), qubit (sqrt 0.3) (sqrt 0.7), qubit (sqrt 0.3) (sqrt 0.7)]
                 res = eval [
-                    Ctrl X (S.fromList [0]) 1
+                    Ctrl X (S.fromList [0,1]) 2
                   ] 1 qbl
-                diff = evalSingle X (qbl !! 1) - (qbl !! 1)
+                diff = evalSingle X (qbl !! 2) - (qbl !! 2)
                 gamma = sqrt $ dot (unQubit diff) (unQubit diff)
                 expected = [
                     PTIV 1 (V.fromList qbl),
-                    PTIV (sqrt 0.5 * gamma) (V.fromList [qubit 0 1, qubit (sqrt 0.5) (-(sqrt 0.5))])
+                    PTIV (sqrt 0.5 * sqrt 0.7 * gamma) (V.fromList [qubit 0 1, qubit 0 1, qubit (sqrt 0.5) (-(sqrt 0.5))])
                   ]
             in assertBool "Tensors not identical" $ compareTensors res expected
           )

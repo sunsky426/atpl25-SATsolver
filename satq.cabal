@@ -31,8 +31,8 @@ library
                       Transform,
                       EvalMV,
                       Eval_Tests,
-                      StateVector
-                      -- MV_Tests
+                      StateVector,
+                      MV_Tests
     -- other-extensions:
     build-depends:    base ^>=4.18.2.1,
                       mtl,
