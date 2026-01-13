@@ -26,9 +26,15 @@ library
                       LinAlg,
                       Comp,
                       Transform,
+                      EvalMV,
+                      StateVector,
+                      -- MV_Tests
                       Eval_Tests,
                       Verif,
                       Tensors,
+                      Measure,
+                      Validation,
+    -- other-extensions:
                       PrettyPrinter
     build-depends:    base ^>=4.18.2.1,
                       mtl,
@@ -78,6 +84,20 @@ executable SATQ
                       src,
                       tests
 
+    default-language: GHC2021
+
+executable grover
+    import:           warnings
+    main-is:          grover.hs
+    -- other-extensions:
+    build-depends:    base ^>=4.18.2.1,
+                      mtl,
+                      satq,
+                      random,
+                      hmatrix,
+                      vector,
+                      containers
+    hs-source-dirs:   exe,
     default-language: GHC2021
 
 test-suite tests
