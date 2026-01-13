@@ -6,7 +6,7 @@ import Numeric.LinearAlgebra
 
 class ApproxEq a where
   approxEq :: Double -> a -> a -> Bool
-  
+
   (~=) :: a -> a -> Bool
   a ~= b = approxEq 1e-9 a b
 
@@ -49,10 +49,11 @@ qubit a b = Qubit (2 |> [a, b])
 z *^ (Qubit v) = Qubit $ scale z v
 
 (/^) :: Qubit -> Qubit -> Maybe C
-qb1 /^ qb2 =
-  if (qfst qb1 / qfst qb2) == (qsnd qb1 / qsnd qb2)
-    then Just $ qfst qb1 / qfst qb2
-    else Nothing
+qb1 /^ qb2
+  | qfst qb1 + qfst qb2 == 0 = Just (qsnd qb1 / qsnd qb2)
+  | qsnd qb1 + qsnd qb2 == 0 = Just (qfst qb1 / qfst qb2)
+  | (qfst qb1 / qfst qb2) == (qsnd qb1 / qsnd qb2) = Just $ qfst qb1 / qfst qb2
+  | otherwise = Nothing
 
 qfst :: Qubit -> C
 qfst (Qubit v) = v ! 0

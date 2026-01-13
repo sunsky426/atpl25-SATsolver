@@ -27,16 +27,13 @@ library
                       Transform,
                       EvalMV,
                       StateVector,
-                      -- MV_Tests
                       Eval_Tests,
                       Verif,
                       Tensors,
                       Measure,
                       Validation,
-                      EvalMV,
-                      Measure,
-                      StateVector
     -- other-extensions:
+                      MV_Tests,
     build-depends:    base ^>=4.18.2.1,
                       mtl,
                       random,
@@ -100,7 +97,8 @@ executable grover
                       random,
                       hmatrix,
                       vector,
-                      containers
+                      containers,
+                      criterion
     hs-source-dirs:   exe,
     default-language: GHC2021
 
