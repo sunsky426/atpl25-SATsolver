@@ -73,10 +73,10 @@ applyGate gate pt@(PT alph qbs) =
           return Nothing
         beta -> do
           newPT <- VM.clone qbs
-          tq <- VM.read newPT (fromInteger target)
+          tq <- VM.read newPT target
           let diff = evalSingle op tq - tq
               gamma = sqrt $ dot (unQubit diff) (unQubit diff)
-          VM.write newPT (fromInteger target) (qubit (qfst diff / gamma) (qsnd diff / gamma)) 
+          VM.write newPT target (qubit (qfst diff / gamma) (qsnd diff / gamma)) 
           Prelude.mapM_ (VM.modify newPT (setQubit (const 0) (const 1))) control_set
           return $ Just $ PT (alph * beta * gamma) newPT
 

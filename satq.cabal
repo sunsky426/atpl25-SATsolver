@@ -13,8 +13,7 @@ common warnings
 
 library
     import:           warnings
-    main-is:          SAT.hs
-    other-modules:    AST,
+    exposed-modules:  AST,
                       ANF,
                       Generator,
                       Parser,
@@ -28,14 +27,13 @@ library
                       Transform,
                       EvalMV,
                       StateVector,
-                      MV_Tests,
                       Eval_Tests,
                       Verif,
                       Tensors,
                       Measure,
                       Validation,
-    -- other-extensions:
-                      PrettyPrinter
+                      PrettyPrinter,
+                      MV_Tests,
     build-depends:    base ^>=4.18.2.1,
                       mtl,
                       random,
