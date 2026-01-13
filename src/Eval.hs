@@ -48,7 +48,7 @@ evalGate :: QGate -> Tensor -> Tensor
 evalGate gate = fixpoint tensorSimp . concatMap (evalTerm gate)
 
 -- evaluates a gate on a pure tensor, using LinAlg Module
-evalTerm :: Gate -> PureTensor -> Tensor
+evalTerm :: QGate -> PureTensor -> Tensor
 evalTerm (Single gate pos) qbs = pure $ qbs // [(pos, evalSingle gate)]
 
 evalTerm (C ctrls target Z) qbs =

@@ -15,7 +15,7 @@ import Data.Maybe
 
 data Gate =
     Sing  Op (Set Int)
-  | Ctrl  Op (Set Int) Integer
+  | Ctrl  Op (Set Int) Int
   deriving Show
 
 type Circuit = [Gate]
@@ -67,18 +67,18 @@ applyGate gate pt@(PT alph qbs) =
       Prelude.mapM_ (VM.modify qbs (evalSingle op)) target_set
       return Nothing
     Ctrl op control_set target -> do
-      tqb <- VM.read qbs (fromInteger target)
+      tqb <- VM.read qbs target --(fromInteger target)
       l <- Prelude.mapM (VM.read qbs) $ S.toList control_set
       let res = evalSingle op tqb
       if res ~= tqb || (~= 1) (L.foldl (\acc q -> acc * qfst q) 1 l) then return Nothing
       else
         case L.foldl (\acc q -> acc * qsnd q) 1 l of
         beta | beta ~= 1 -> do
-          VM.modify qbs (evalSingle op) (fromInteger target)
+          VM.modify qbs (evalSingle op) target --(fromInteger target)
           return Nothing
         beta -> do
           newPT <- VM.clone qbs
-          VM.modify newPT (\q -> evalSingle op q - q) (fromInteger target)
+          VM.modify newPT (\q -> evalSingle op q - q) target --(fromInteger target)
           Prelude.mapM_ (VM.modify newPT (setQubit (const 0) (const 1))) control_set
           return $ Just $ PT (alph *beta) newPT
 

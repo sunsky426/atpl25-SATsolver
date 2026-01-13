@@ -152,8 +152,8 @@ parse s =
     Right (_,res) -> res
     Left err      -> error err
 
-parseWithUnique :: String -> (Exp, Int)
+parseWithUnique :: String -> (Exp, [String])
 parseWithUnique s =
   case runParser (parseExp <* eof) (s,initTable) of
-    Right ((_,vt),res) -> (res,length vt)
+    Right ((_,vt),res) -> (res,map fst vt)
     Left err -> error err

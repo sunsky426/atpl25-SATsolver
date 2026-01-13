@@ -21,20 +21,20 @@ translateAstToAnf (OR e1 e2) =
    in Xor (Xor e1' e2') (And e1' e2') -- equivalent to elimORwXOR
 
 -- distribute And across Xor.
-distributeAnd :: ANF -> ANF
-distributeAnd anf =
+dist :: ANF -> ANF
+dist anf =
   case anf of
     And e1 e2 -> distAnd (dist e1) (dist e2)
     Xor e1 e2 -> Xor (dist e1) (dist e2)
     _ -> anf
   where
-    dist a = distributeAnd a
     distAnd e1 e2 =
       case (e1,e2) of
         (Xor a b,c) -> Xor (distAnd a c) (distAnd b c)
         (a,Xor b c) -> Xor (distAnd a b) (distAnd a c)
         _ -> And e1 e2
 
+-- reduce ANF
 normalizeAnf :: ANF -> ANF
 normalizeAnf anf =
   case anf of
@@ -55,4 +55,4 @@ normalizeAnf anf =
 
 -- double normalization may be needed in the future (unlikely)
 astToAnf :: Exp -> ANF
-astToAnf = distributeAnd . normalizeAnf . translateAstToAnf
+astToAnf = dist . normalizeAnf . translateAstToAnf

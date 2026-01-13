@@ -30,8 +30,7 @@ library
                       Comp,
                       Transform,
                       EvalMV,
-                      Eval_Tests,
-                      StateVector
+                      StateVector,
                       -- MV_Tests
                       Eval_Tests,
                       Verif,

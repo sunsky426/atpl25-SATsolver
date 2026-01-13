@@ -10,7 +10,7 @@ data Op
 
 data QGate
   = Single Op Pos
-  | C [Pos] Pos Op -- unnecessary, desprecated. `C [Pos] Op Pos` is also cleaner imo.
+  | C [Pos] Pos Op
   | CZ [Pos]
   deriving (Show)
 

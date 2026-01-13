@@ -5,16 +5,12 @@ import Generator
 import Data.Maybe
 import Prelude hiding (exp)
 
-type Solution = Maybe [Bool]
-data GenConfig = GenConfig {
+type Solution = [Bool]
+type BadSolution = (Exp, [Bool])
+data GenConfig = GC {
   seed  :: Int,
   count :: Int,
   size  :: Int
-}
-data CounterExample = CounterExample {
-  exp :: Exp,
-  proposition :: Solution,
-  solution :: Solution
 }
 
 validate :: Exp -> [Bool] -> Bool
@@ -31,11 +27,11 @@ validate bexp ass =
 
 
 -- only needed for validating that an expression is not satisfiable.
-bruteSATSolver :: Exp -> Solution
-bruteSATSolver _ = Nothing -- TODO: add actual SAT solving logic
+--bruteSATSolver :: Exp -> Solution
+--bruteSATSolver _ = Nothing -- TODO: add actual SAT solving logic
 
 
-validatePipeline :: (Exp -> Solution) -> GenConfig -> Maybe [CounterExample]
+validatePipeline :: (Exp -> Solution) -> GenConfig -> Maybe [BadSolution]
 validatePipeline pipeline config =
   let 
       -- generate expressions for validation testing, based on injected config.
@@ -45,21 +41,25 @@ validatePipeline pipeline config =
       evaluated = map pipeline exps
 
       -- a check function for (in)validating solutions to expressions
-      check res exp' = 
-        case res of
-          Nothing -> 
-            case bruteSATSolver exp' of
-              Nothing -> Nothing
-              Just res' -> 
-                Just $ CounterExample 
-                  { exp = exp', 
-                    proposition = Nothing, 
-                    solution = Just res' 
-                  }
-          Just res' -> 
-            if validate exp' res'
-              then Nothing 
-              else Just $ CounterExample { exp = exp', proposition = Just res', solution = Nothing}
+      check res exp' =
+        case validate exp' res of
+          True  -> Nothing
+          False -> Just (exp',res)
+      --check res exp' = 
+      --  case res of
+      --    Nothing -> 
+      --      case bruteSATSolver exp' of
+      --        Nothing -> Nothing
+      --        Just res' -> 
+      --          Just $ CounterExample 
+      --            { exp = exp', 
+      --              proposition = Nothing, 
+      --              solution = Just res' 
+      --            }
+      --    Just res' -> 
+      --      if validate exp' res'
+      --        then Nothing 
+      --        else Just $ CounterExample { exp = exp', proposition = Just res', solution = Nothing}
 
       -- actually checking each pipeline/evaluator result
       checked = mapMaybe (\(res,exp) -> check res exp) $ zip evaluated exps

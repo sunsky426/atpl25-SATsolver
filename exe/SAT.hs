@@ -1,5 +1,6 @@
 module Main where
 
+import AST
 import ANF
 import Comp
 import Gates
@@ -7,34 +8,59 @@ import Measure
 import Validation
 import StateVector
 import Parser
+import EvalMV
+import LinAlg
+import Grovers
+import StateVector
+import Generator
+import System.Environment (getArgs)
+import Data.List (intersperse)
+import qualified Data.Set as S
+import qualified Data.Vector as V
+
+-- deprecate once gate types are no longer separate
+changeGateType :: QGate -> Gate
+changeGateType qp =
+  case qp of
+    Single op pos -> Sing op $ S.singleton pos
+    C pos1 pos2 op-> Ctrl op (S.fromList pos1) pos2
+    CZ (pos:[]) -> Sing Z $ S.singleton pos
+    CZ (pos:pos') -> Ctrl Z (S.fromList pos') pos
+    CZ [] -> error "fun"
+
+
+--unique :: Exp -> Int
+--unique e =
+--  case e of
+--    Const _ -> 0
+--    Var i -> i+1
+--    AND e1 e2 -> max (unique e1) (unique e2)
+--    OR e1 e2 -> max (unique e1) (unique e2)
+--    XOR e1 e2 -> max (unique e1) (unique e2)
+--    NEG e' -> unique e'
+
+
+solve :: Int -> Exp -> Solution
+solve n bexp =
+  let oracle = phaseOracle bexp
+      groverSingleIteration = pow H n ++ groverIteration oracle (diffusion n) 1
+      --groverByDef = grover oracle n
+      grovers = map changeGateType groverSingleIteration--groverSingleIteration
+      zeroTens = replicate n (qubit 1 0)
+      resultingTensor = eval grovers 1 zeroTens
+   in outcome $ tensorToStateVector resultingTensor
+
+ppResult :: Solution -> [String] -> IO ()
+ppResult sol vars = do
+  putStr $ concat $ intersperse ", " $ map (\(s,v) -> v ++ " -> " ++ show s) $ zip sol vars
 
 main :: IO ()
-main = 
-  let 
-      -- -- obtain input - substitute appropriate input stream later
-      example = "(a & b) ^ (b & c)"
-
-      -- -- parse input
-      (bexp,) = 
-        case parseWithUnique example of
-          Right x  -> x
-          Left err -> error err
-
-      -- -- quantumize boolean expression
-      -- (instrs,m) = compile bexp
-      -- qop = quantumize (n,m) instrs
-
-      -- apply Grover's algorithm
-      -- width = n + m + 1
-      iterations = 5
-      width = 3
-
-      oracle = [Only 0 X, Only 2 X, Ctrl [0, 1] 2 Z, Only 2 X, Only 0 X]
-      groversCircuit = grovers width oracle iterations
-
-      -- ???
-      -- h = evalProgram (pow H width) (zero width)
-      result = evalByParts 1 groversCircuit (zero width)
-
-      -- profit
-   in print . vectorize =<< result
+main = do
+  args <- getArgs
+  case args of
+    [input] -> 
+      let (bexp,vars) = parseWithUnique input
+          n = length vars
+          solution = solve n bexp
+       in do ppResult solution vars
+    _ -> do putStrLn "Usage: cabal run \"<boolexp>\""
