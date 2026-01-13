@@ -1,23 +1,20 @@
 cabal-version:      3.4
 name:               satq
 version:            0.1.0.0
--- synopsis:
--- description:
 homepage:           https://github.com/sunsky426/atpl25-SATsolver
 license:            BSD-3-Clause
 author:             Barbella, Kanne, Schmidt, Zou
 maintainer:         -
--- copyright:
 build-type:         Simple
 extra-doc-files:    CHANGELOG.md
--- extra-source-files:
 
 common warnings
     ghc-options: -Wall
 
 library
     import:           warnings
-    exposed-modules:  AST,
+    main-is:          SAT.hs
+    other-modules:    AST,
                       ANF,
                       Generator,
                       Parser,
@@ -30,10 +27,15 @@ library
                       Comp,
                       Transform,
                       EvalMV,
-                      Eval_Tests,
                       StateVector,
-                      MV_Tests
+                      MV_Tests,
+                      Eval_Tests,
+                      Verif,
+                      Tensors,
+                      Measure,
+                      Validation,
     -- other-extensions:
+                      PrettyPrinter
     build-depends:    base ^>=4.18.2.1,
                       mtl,
                       random,
@@ -44,22 +46,44 @@ library
                       tasty-hunit
     hs-source-dirs:   exe,
                       src,
-                      tests,
+                      tests
     default-language: GHC2021
 
 executable SATQ
     import:           warnings
     main-is:          SAT.hs
-    -- other-extensions:
+
+    other-modules:    AST,
+                      ANF,
+                      Generator,
+                      Parser,
+                      Quantumize,
+                      Grovers,
+                      Eval,
+                      PhaseEval,
+                      Gates,
+                      LinAlg,
+                      Comp,
+                      Transform,
+                      Verif,
+                      Tensors,
+                      Eval_Tests,
+                      PrettyPrinter
+
     build-depends:    base ^>=4.18.2.1,
                       mtl,
                       satq,
                       random,
                       hmatrix,
                       vector,
-                      containers
+                      containers,
+                      tasty,
+                      tasty-hunit
+
     hs-source-dirs:   exe,
                       src,
+                      tests
+
     default-language: GHC2021
 
 executable grover
@@ -81,6 +105,6 @@ test-suite tests
     type: exitcode-stdio-1.0
     main-is: runtests.hs
     build-depends:
-        base
-      , tasty
-      , satq
+        base,
+        tasty,
+        satq

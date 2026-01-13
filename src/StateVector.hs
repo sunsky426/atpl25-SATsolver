@@ -4,6 +4,8 @@ import LinAlg
 
 import Data.Vector as V
 import Data.List as L
+import Data.Ord (comparing)
+import Data.Bits (countTrailingZeros)
 
 import EvalMV
 import Numeric.LinearAlgebra as NL

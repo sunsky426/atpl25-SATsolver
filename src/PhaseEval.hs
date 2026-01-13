@@ -1,19 +1,13 @@
 module PhaseEval where
 
 import Gates
+import Tensors
 import Data.Complex
-import Data.Vector (Vector)
 import qualified Data.Vector as V
 import qualified Data.Vector.Mutable as MV
 
-type Amplitude  = Complex Double
-type Qubit      = (Amplitude,Amplitude)
-type PureTensor = Vector Qubit
-type TensorTerm = (Amplitude,PureTensor)
-type TensorSum  = [TensorTerm]
-
 eps :: Amplitude
-eps = 0.00001 :+ 0.0001
+eps = 0.00001 :+ 0.00001
 
 (~=) :: Amplitude -> Amplitude -> Bool
 a1 ~= a2 = magnitude (a1 - a2) <= magnitude eps
@@ -30,11 +24,10 @@ one = 1 :+ 0
 zeroTensor :: Int -> TensorTerm
 zeroTensor n = (one,V.replicate n (one,zero))
 
--- Quickly deprecate this, as some effects can be retracted from the qubits into the scalar (e.g. Z).
 evalOp :: Op -> Qubit -> Qubit
 evalOp I (a0,a1) = (a0,a1)  -- Identity.
 evalOp X (a0,a1) = (a1,a0)  -- X swaps amplitudes.
-evalOp Z (a0,a1) = (a0,if a1 ~= zero then a1 else -a1) -- Z flips sign of |1>.
+evalOp Z (a0,a1) = (a0,-a1) -- Z flips sign of |1>.
 evalOp Y (a0,a1) = (-i * a1, i * a0)  -- Y does Y things.
 evalOp H (a0,a1) =  
   ((a0 + a1) / sqrt 2,
@@ -44,7 +37,18 @@ evalGate :: QGate -> TensorSum -> TensorSum
 evalGate (Single op pos) tsum = 
   map (\(amp,vec) -> 
     (amp,V.modify (\v -> MV.modify v (\v' -> evalOp op v') pos) vec)) tsum
-evalGate (CZ pos) tsum =
+evalGate (CZ pos) tsum = 
+--  where 
+--    applyCZ :: TensorTerm -> TensorSum
+--    applyCZ (amp,vec) =
+--      let newAmp = (foldl (\y x -> (snd (vec V.! x)) * y) one pos)
+--       in if newAmp ~= zero
+--            then [(amp,vec)] -- some control-gate was zero
+--            else [(amp,vec),
+--                  (newAmp,V.modify (\v -> MV.write v one pos) vec)]
+--concatMap applyCZ tsum
+--where
+--  applyCZ (amp,vec) =
   concatMap applyCZTerm tsum
   where
     applyCZTerm :: TensorTerm -> TensorSum
