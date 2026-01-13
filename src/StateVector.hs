@@ -22,6 +22,22 @@ tensorToStateVector pt = tensorToStateVector' pt
       (1 |> [s]) * V.foldl (\a b -> flatten $ outer a b) (unQubit $ V.head qbs) (V.map unQubit $ V.tail qbs)
       + tensorToStateVector' t
 
+outcomet :: NL.Vector C -> V.Vector C
+outcomet sv = 
+  let sv' = V.map (** 2) $ V.fromList . NL.toList $ sv
+   in sv'
+
+
+outcome :: NL.Vector C -> [Bool]
+outcome sv =
+  let sv' = V.map (** 2) $ V.fromList . NL.toList $ sv
+   in toBits (countTrailingZeros $ V.length sv') (V.maxIndexBy (comparing realPart) sv')
+
+toBits :: Int -> Int -> [Bool]
+toBits n x = [ testBit x (n - 1 - i) | i <- [0 .. n-1] ]
+  where
+    testBit v i = (v `div` (2^i)) `mod` 2 == 1
+
 toBin l 0 = L.replicate (l-1) '0' Prelude.++ "0"
 toBin l 1 = L.replicate (l-1) '0' Prelude.++ "1"
 toBin l n =
