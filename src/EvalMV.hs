@@ -12,6 +12,8 @@ import Gates
 import Eval (Tensor)
 import qualified GHC.Real as L
 import Data.Maybe
+import Numeric.LinearAlgebra
+import Debug.Trace
 
 data Gate =
     Sing  Op (Set Int)
@@ -20,15 +22,9 @@ data Gate =
 
 type Circuit = [Gate]
 
--- type (PrimMonad s) => Tensor s = [PureTensor s]
-
--- cmp a b = a < b
-
--- type (PrimMonad s) => V.MVector s
-
 data PureTensorMV s = PT {
-  scalar :: C,
-  qbs :: V.MVector (PrimState (ST s)) Qubit
+  scalarMV :: C,
+  qbsMV :: V.MVector (PrimState (ST s)) Qubit
 }
 
 data PureTensorIV = PTIV {
@@ -38,23 +34,22 @@ data PureTensorIV = PTIV {
 
 type TensorMV s = [PureTensorMV s]
 
--- createInt :: C -> [Qubit] -> ST s Int
--- createInt scalar l = do
---   v <- V.thaw $ V.fromList l
---   return 0
-
 createPT :: C -> [Qubit] -> ST s (PureTensorMV s)
 createPT scalar l = do
   v <- V.thaw $ V.fromList l
   return $ PT scalar v
 
--- applySingle sg (PT s qbs) =
-
--- applySingle op = 
+toMV :: PureTensorIV -> ST s (PureTensorMV s)
+toMV (PTIV s qbs) = do 
+  v <- thaw qbs 
+  return $ PT {
+    scalarMV = s,
+    qbsMV = v
+  }
 
 toIV :: PureTensorMV s -> ST s PureTensorIV
 toIV (PT s qbs) = do
-  v <- V.freeze qbs
+  v <- freeze qbs
   return $ PTIV {
     scalarIV = s,
     qbsIV = v
@@ -78,23 +73,37 @@ applyGate gate pt@(PT alph qbs) =
           return Nothing
         beta -> do
           newPT <- VM.clone qbs
-          VM.modify newPT (\q -> evalSingle op q - q) target --(fromInteger target)
+          tq <- VM.read newPT (fromInteger target)
+          let diff = evalSingle op tq - tq
+              gamma = sqrt $ dot (unQubit diff) (unQubit diff)
+          VM.write newPT (fromInteger target) (qubit (qfst diff / gamma) (qsnd diff / gamma)) 
           Prelude.mapM_ (VM.modify newPT (setQubit (const 0) (const 1))) control_set
-          return $ Just $ PT (alph *beta) newPT
+          return $ Just $ PT (alph * beta * gamma) newPT
 
 simpPureTensorQ :: PureTensorMV s -> PureTensorMV s -> ST s (Maybe C)
 simpPureTensorQ (PT _ qbs1) (PT s2 qbs2) = do
-    v1 <- V.freeze qbs1
-    v2 <- V.freeze qbs2 -- find more optimale
-    case V.toList $ V.findIndices id $ V.zipWith (\x y -> not (x ~= y)) v1 v2 of
+
+    l <- find 0 []
+
+    case l of
       -- simplify if puretensors are equal up to scalar
-      [] -> return $ Just s2
+      Just [] -> return $ Just s2
       -- simplify if equal up to a scalar except one factor
-      [i] -> do
-        val1 <- VM.read qbs1 i
-        val2 <- VM.read qbs2 i
+      Just [val1, val2] -> do
         return $ (* s2) <$> val2 /^ val1
       _ -> return Nothing
+
+  where find i res =
+          if i == VM.length qbs1 then return (Just res)
+          else do
+            val1 <- VM.read qbs1 i
+            val2 <- VM.read qbs2 i
+            if not (val1 ~= val2) then
+              if L.null res then do
+                find (i+1) [val1, val2]
+              else
+                return Nothing
+            else find (i+1) res
 
 simpTensor :: TensorMV s -> ST s (TensorMV s)
 simpTensor [] = return []
@@ -121,4 +130,5 @@ eval circuit scalar qbs = runST evaluator
           q <- V.thaw $ V.fromList qbs
           res <- evalCircuit circuit [PT scalar q]
           Prelude.mapM toIV res
+
 

@@ -28,7 +28,7 @@ library
                       Transform,
                       EvalMV,
                       StateVector,
-                      -- MV_Tests
+                      MV_Tests,
                       Eval_Tests,
                       Verif,
                       Tensors,
@@ -96,7 +96,8 @@ executable grover
                       random,
                       hmatrix,
                       vector,
-                      containers
+                      containers,
+                      criterion
     hs-source-dirs:   exe,
     default-language: GHC2021
 
