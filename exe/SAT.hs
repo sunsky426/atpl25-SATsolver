@@ -6,7 +6,7 @@ import Comp
 import Gates
 import Measure
 import Validation
-import StateVector
+import Grovers
 import Parser
 import EvalMV
 import LinAlg
