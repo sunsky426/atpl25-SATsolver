@@ -13,7 +13,6 @@ common warnings
 
 library
     import:           warnings
-    main-is:          SAT.hs
     other-modules:    AST,
                       ANF,
                       Generator,
@@ -34,8 +33,10 @@ library
                       Tensors,
                       Measure,
                       Validation,
+                      EvalMV,
+                      Measure,
+                      StateVector
     -- other-extensions:
-                      PrettyPrinter
     build-depends:    base ^>=4.18.2.1,
                       mtl,
                       random,
@@ -68,7 +69,10 @@ executable SATQ
                       Verif,
                       Tensors,
                       Eval_Tests,
-                      PrettyPrinter
+                      Validation,
+                      EvalMV,
+                      Measure,
+                      StateVector
 
     build-depends:    base ^>=4.18.2.1,
                       mtl,
