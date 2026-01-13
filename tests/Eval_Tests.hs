@@ -1,7 +1,7 @@
 module Eval_Tests (tests) where
 
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (testCase, (@?=), assertBool)
+import Test.Tasty.HUnit (testCase, assertBool)
 
 import LinAlg
 import Gates
@@ -10,9 +10,11 @@ import Eval
 import Data.Vector as V
 import Data.List as L
 
+comparePureTensors :: PureTensor -> PureTensor -> Bool
 comparePureTensors (PT {scalar = scalar1, qbs = qbs1}) (PT {scalar = scalar2, qbs = qbs2}) =
   scalar1 == scalar2 && V.all (uncurry (~=)) (V.zip qbs1 qbs2)
 
+compareTensors :: [PureTensor] -> [PureTensor] -> Bool
 compareTensors t1 t2 =
   L.all (uncurry comparePureTensors) $ L.zip t1 t2
 

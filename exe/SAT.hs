@@ -1,8 +1,6 @@
 module Main where
 
-import ANF
 import Comp
-import Gates
 import Grovers
 import Parser
 import PhaseEval

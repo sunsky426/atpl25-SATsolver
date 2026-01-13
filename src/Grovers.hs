@@ -20,4 +20,4 @@ groverIteration oracle diffuser n =
 
 grover :: QP -> Int -> QP
 grover oracle n =
-  pow H n ++ groverIteration oracle (diffusion n) (floor (pi / 4.0 * sqrt(2 ^ n)))
+  pow H n ++ groverIteration oracle (diffusion n) (floor ((pi / 4.0 * sqrt (2 ^ n)) :: Double))

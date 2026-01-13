@@ -1,7 +1,6 @@
 module PrettyPrinter where
 
 import ANF
-import Gates
 import Tensors
 import Data.Complex
 import qualified Data.Vector as V
