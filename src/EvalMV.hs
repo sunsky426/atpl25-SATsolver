@@ -23,8 +23,8 @@ data Gate =
 type Circuit = [Gate]
 
 data PureTensorMV s = PT {
-  scalar :: C,
-  qbs :: V.MVector (PrimState (ST s)) Qubit
+  scalarMV :: C,
+  qbsMV :: V.MVector (PrimState (ST s)) Qubit
 }
 
 data PureTensorIV = PTIV {
@@ -38,6 +38,14 @@ createPT :: C -> [Qubit] -> ST s (PureTensorMV s)
 createPT scalar l = do
   v <- V.thaw $ V.fromList l
   return $ PT scalar v
+
+toMV :: PureTensorIV -> ST s (PureTensorMV s)
+toMV (PTIV s qbs) = do 
+  v <- thaw qbs 
+  return $ PT {
+    scalarMV = s,
+    qbsMV = v
+  }
 
 toIV :: PureTensorMV s -> ST s PureTensorIV
 toIV (PT s qbs) = do

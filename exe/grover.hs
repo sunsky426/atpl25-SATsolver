@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-overlapping-patterns #-}
 import EvalMV
 import StateVector
 import LinAlg
@@ -7,6 +8,8 @@ import Data.List as L
 import Debug.Trace
 import System.Environment
 import Criterion.Main
+import Comp (phaseOracle)
+import Control.Monad (forM, forM_)
 
 numberOfRuns :: Int -> Int
 numberOfRuns qbCount = floor $ ((pi :: Float) / (4 :: Float)) * sqrt (2 ^ qbCount)
@@ -51,6 +54,31 @@ parseNegList negListStr qbCount
   | negListStr == ["all"] = [0 .. qbCount-1]
   | otherwise = read ("[" ++ head negListStr ++ "]") :: [Int]
 
+
+-- oracleCircuit = [
+--     Sing H (S.fromList [0 .. 5]),
+
+--     Ctrl Z (S.fromList [1]) 4,
+
+--     Ctrl Z (S.fromList [1 .. 2]) 4, 
+
+--     Ctrl Z (S.fromList [1 .. 3]) 4
+    
+--     -- Sing H (S.fromList [0 .. 5])
+--   ]
+
+oracleCircuit = [
+    Sing H (S.fromList [0 .. 3]),
+
+    Ctrl Z (S.fromList [0 .. 2]) 3,
+
+    Ctrl Z (S.fromList [0 .. 1]) 3
+
+    -- Ctrl Z (S.fromList [1]) 4
+
+    -- Sing H (S.fromList [0 .. 5])
+  ]
+
 main :: IO ()
 main = do
     args <- getArgs
@@ -69,6 +97,9 @@ main = do
           let qbCount = read qbCountStr
               groversResult = runGrovers qbCount (parseNegList negListStr qbCount)
           putStr $ ppSV $ tensorToStateVector groversResult
+        "man":_ -> do 
+            -- mapM_ print $ eval oracleCircuit 1 [qubit (sqrt 1) (sqrt 0) | _ <- [0 .. 5]]
+            putStr $ ppSV $ tensorToStateVector $ eval oracleCircuit 1 [qubit (sqrt 1) (sqrt 0) | _ <- [0 .. 4]]
         qbCountStr:negListStr -> do
           let qbCount = read qbCountStr
               groversResult = runGrovers qbCount (parseNegList negListStr qbCount)
