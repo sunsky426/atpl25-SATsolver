@@ -13,7 +13,7 @@ common warnings
 
 library
     import:           warnings
-    other-modules:    AST,
+    exposed-modules:  AST,
                       ANF,
                       Generator,
                       Parser,
@@ -27,49 +27,24 @@ library
                       Transform,
                       EvalMV,
                       StateVector,
-                      Eval_Tests,
                       Verif,
                       Tensors,
                       Measure,
-                      Validation,
+                      Validation
     -- other-extensions:
-                      MV_Tests,
     build-depends:    base ^>=4.18.2.1,
                       mtl,
                       random,
                       hmatrix,
                       vector,
-                      containers,
-                      tasty,
-                      tasty-hunit
+                      containers
     hs-source-dirs:   exe,
-                      src,
-                      tests
+                      src
     default-language: GHC2021
 
 executable SATQ
     import:           warnings
     main-is:          SAT.hs
-
-    other-modules:    AST,
-                      ANF,
-                      Generator,
-                      Parser,
-                      Quantumize,
-                      Grovers,
-                      Eval,
-                      PhaseEval,
-                      Gates,
-                      LinAlg,
-                      Comp,
-                      Transform,
-                      Verif,
-                      Tensors,
-                      Eval_Tests,
-                      Validation,
-                      EvalMV,
-                      Measure,
-                      StateVector
 
     build-depends:    base ^>=4.18.2.1,
                       mtl,
@@ -77,13 +52,9 @@ executable SATQ
                       random,
                       hmatrix,
                       vector,
-                      containers,
-                      tasty,
-                      tasty-hunit
+                      containers
 
-    hs-source-dirs:   exe,
-                      src,
-                      tests
+    hs-source-dirs:   exe
 
     default-language: GHC2021
 
@@ -105,7 +76,15 @@ executable grover
 test-suite tests
     type: exitcode-stdio-1.0
     main-is: runtests.hs
+    other-modules:    Eval_Tests,
+                      MV_Tests,
+                      Tests,
+    hs-source-dirs:   tests
     build-depends:
-        base,
+        base ^>=4.18.2.1,
         tasty,
+        tasty-hunit,
+        vector,
+        hmatrix,
+        containers,
         satq

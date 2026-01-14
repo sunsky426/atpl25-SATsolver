@@ -12,6 +12,6 @@ data QGate
   = Single Op Pos
   | C [Pos] Pos Op
   | CZ [Pos]
-  deriving (Show)
+  deriving (Show,Eq)
 
 type QP = [QGate]

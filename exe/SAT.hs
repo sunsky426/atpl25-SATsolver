@@ -3,16 +3,14 @@ module Main where
 import AST
 import ANF
 import Comp
-import Gates
-import Measure
-import Validation
 import Grovers
+import Validation
+import Gates
 import Parser
 import EvalMV
 import LinAlg
 import Grovers
 import StateVector
-import Generator
 import System.Environment (getArgs)
 import Data.List (intersperse)
 import qualified Data.Set as S
@@ -44,11 +42,17 @@ solve :: Int -> Exp -> Solution
 solve n bexp =
   let oracle = phaseOracle bexp
       groverSingleIteration = pow H n ++ groverIteration oracle (diffusion n) 1
-      --groverByDef = grover oracle n
+      groverByDef = grover oracle n
       grovers = map changeGateType groverSingleIteration--groverSingleIteration
       zeroTens = replicate n (qubit 1 0)
       resultingTensor = eval grovers 1 zeroTens
    in outcome $ tensorToStateVector resultingTensor
+      --do 
+      --  putStrLn $ ppSV $ tensorToStateVector resultingTensor
+      --  putStrLn $ show $ outcome $ tensorToStateVector resultingTensor
+      --  putStrLn $ show $ oracle
+      --  putStrLn $ show $ translateAstToAnf bexp
+      --  putStrLn $ show $ astToAnf bexp
 
 ppResult :: Solution -> [String] -> IO ()
 ppResult sol vars = do
@@ -61,6 +65,6 @@ main = do
     [input] -> 
       let (bexp,vars) = parseWithUnique input
           n = length vars
-          solution = solve n bexp
-       in do ppResult solution vars
+          --solution = solve n bexp
+       in do solve n bexp --ppResult solution vars
     _ -> do putStrLn "Usage: cabal run \"<boolexp>\""
