@@ -1,9 +1,10 @@
+{-# OPTIONS_GHC -Wno-type-defaults #-}
 module GenEval_Tests (tests) where
 
 import GenEval
 
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (testCase, (@?=), assertBool)
+import Test.Tasty.HUnit (testCase, assertBool)
 
 import Data.Vector as V
 import Data.List as L
@@ -15,6 +16,7 @@ comparePureTensors :: PureTensorIV -> PureTensorIV -> Bool
 comparePureTensors (PTIV {scalarIV = scalar1, qbsIV = qbs1}) (PTIV {scalarIV = scalar2, qbsIV = qbs2}) =
   scalar1 == scalar2 && V.all (uncurry (~=)) (V.zip qbs1 qbs2)
 
+compareTensors :: [PureTensorIV] -> [PureTensorIV] -> Bool
 compareTensors t1 t2 =
   L.all (uncurry comparePureTensors) $ L.zip t1 t2
 
@@ -28,7 +30,7 @@ evalPureTensors circuit pts = runST evaluator
 tests :: TestTree
 tests =
   testGroup
-    "General evaluator" [
+    "Unit tests for general evaluator" [
       testGroup
         "Evaluation of gates"
         [
@@ -118,7 +120,7 @@ tests =
         "Misc"
         [
           testCase "Order does not matter when gates are independent" (
-            let qbl = [qubit (sqrt 0.5) (sqrt 0.5) | _ <- [0 .. 5]]
+            let qbl = [qubit (sqrt 0.5) (sqrt 0.5) | _ <- [0 :: Integer .. 5]]
                 circuit = [
                     Ctrl Z (S.fromList [0 .. 4]) 5,
                     Ctrl Z (S.fromList [0 .. 3]) 5,

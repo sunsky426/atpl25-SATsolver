@@ -1,16 +1,17 @@
-module Tests where
+module SpecEval_PropTests where
 
 import SpecEval.AST
 import SpecEval.ANF
 import SpecEval.Verif
 import Test.QuickCheck
+import Test.Tasty.QuickCheck
 import SpecEval.Eval (evalProgram, zero, scanProgram)
 import SpecEval.Measure (vectorize, seperateSolution)
 import SpecEval.Grovers (grovers)
 import SpecEval.Gates (CircuitWidth)
 import Data.List (nub)
 import Data.Vector.Storable (Vector)
-import Data.Vector.Unboxed.Mutable (MVector(MV_2))
+import Test.Tasty
 
 maxVar :: Exp -> Int
 maxVar (Atom (Var n)) = n
@@ -77,3 +78,11 @@ scanGrover width e iterations = do
   let groversCircuit = grovers width oracle iterations
   let ranks = scanProgram groversCircuit (zero width)
   pure ranks
+
+tests :: TestTree
+tests =
+  testGroup "Property tests specialized evaluator" [
+      testProperty "Converting expressions to ANF" (mapSize (const 5) exp2anfTest),
+      testProperty "Grover cheat" (mapSize (const 5) groverCheatTest),
+      testProperty "Tensor rank test" (mapSize (const 5) tensorRankTest)
+    ]

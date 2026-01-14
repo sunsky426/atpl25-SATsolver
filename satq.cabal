@@ -15,7 +15,8 @@ library
     import:           warnings
     exposed-modules:  GenEval,
                       SpecEval,
-                      GenEval_Tests
+                      GenEval_Tests,
+                      SpecEval_PropTests
     other-modules:    GenEval.ANF,
                       GenEval.Comp,
                       GenEval.Grovers,
@@ -42,7 +43,8 @@ library
                       containers,
                       tasty,
                       tasty-hunit,
-                      QuickCheck
+                      QuickCheck,
+                      tasty-quickcheck
     hs-source-dirs:   exe,
                       src,
                       tests,
