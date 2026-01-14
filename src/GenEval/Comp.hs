@@ -1,8 +1,8 @@
-module Comp where
+module GenEval.Comp where
 
-import Gates
-import ANF
-import AST
+import GenEval.Gates
+import GenEval.ANF
+import GenEval.AST
 import Data.List (nub)
 
 buildPhase :: ANF -> QP

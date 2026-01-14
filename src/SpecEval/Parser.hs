@@ -1,6 +1,6 @@
-module Parser ( parse, parseWithUnique, ) where
+module SpecEval.Parser ( parse, parseWithUnique, ) where
 
-import AST
+import SpecEval.AST
 import Data.Char (isAlphaNum)
 import Control.Monad (ap,liftM,void)
 
@@ -120,7 +120,7 @@ parseAtom = choice
       pure $ NEG x,
     do
       x <- tVar
-      pure $ Var x,
+      pure $ Atom $ Var x,
     lString "(" *> parseExp <* lString ")"
   ]
 

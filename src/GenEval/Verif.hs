@@ -1,6 +1,6 @@
-module Verif where
+module GenEval.Verif where
 
-import AST
+import GenEval.AST
 
 type BitString = [Bool]
 

@@ -1,19 +1,16 @@
 {- HLINT ignore "Use tuple-section" -}
-module EvalMV where
+module GenEval.Eval where
 
 import Control.Monad.ST
 
-import LinAlg
+import GenEval.LinAlg
 import Data.Vector.Mutable as VM
 import Data.Set as S
 import Data.List as L
 import Data.Vector as V hiding (catMaybes)
-import Gates
-import Eval (Tensor)
-import qualified GHC.Real as L
+import GenEval.Gates
 import Data.Maybe
 import Numeric.LinearAlgebra
-import Debug.Trace
 
 data Gate =
     Sing  Op (Set Int)
@@ -35,9 +32,9 @@ data PureTensorIV = PTIV {
 type TensorMV s = [PureTensorMV s]
 
 createPT :: C -> [Qubit] -> ST s (PureTensorMV s)
-createPT scalar l = do
+createPT s l = do
   v <- V.thaw $ V.fromList l
-  return $ PT scalar v
+  return $ PT s v
 
 toMV :: PureTensorIV -> ST s (PureTensorMV s)
 toMV (PTIV s qbs) = do 
@@ -56,7 +53,7 @@ toIV (PT s qbs) = do
   }
 
 applyGate :: Gate -> PureTensorMV s -> ST s (Maybe (PureTensorMV s))
-applyGate gate pt@(PT alph qbs) =
+applyGate gate (PT alph qbs) =
   case gate of
     Sing op target_set -> do
       Prelude.mapM_ (VM.modify qbs (evalSingle op)) target_set
@@ -83,7 +80,7 @@ applyGate gate pt@(PT alph qbs) =
 simpPureTensorQ :: PureTensorMV s -> PureTensorMV s -> ST s (Maybe C)
 simpPureTensorQ (PT _ qbs1) (PT s2 qbs2) = do
 
-    l <- find 0 []
+    l <- findNonEq 0 []
 
     case l of
       -- simplify if puretensors are equal up to scalar
@@ -93,17 +90,17 @@ simpPureTensorQ (PT _ qbs1) (PT s2 qbs2) = do
         return $ (* s2) <$> val2 /^ val1
       _ -> return Nothing
 
-  where find i res =
+  where findNonEq i res =
           if i == VM.length qbs1 then return (Just res)
           else do
             val1 <- VM.read qbs1 i
             val2 <- VM.read qbs2 i
             if not (val1 ~= val2) then
               if L.null res then do
-                find (i+1) [val1, val2]
+                findNonEq (i+1) [val1, val2]
               else
                 return Nothing
-            else find (i+1) res
+            else findNonEq (i+1) res
 
 simpTensor :: TensorMV s -> ST s (TensorMV s)
 simpTensor [] = return []
@@ -125,10 +122,10 @@ evalCircuit (h : t) tensor = do
   evalCircuit t s
 
 eval :: [Gate] -> C -> [Qubit] -> [PureTensorIV]
-eval circuit scalar qbs = runST evaluator
+eval circuit s qbs = runST evaluator
   where evaluator = do
           q <- V.thaw $ V.fromList qbs
-          res <- evalCircuit circuit [PT scalar q]
+          res <- evalCircuit circuit [PT s q]
           Prelude.mapM toIV res
 
 

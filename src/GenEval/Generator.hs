@@ -1,6 +1,6 @@
-module Generator (gen,genMany) where
+module GenEval.Generator (gen,genMany) where
 
-import AST
+import GenEval.AST
 import System.Random
 
 genMany :: Int -> Int -> Int -> [Exp]

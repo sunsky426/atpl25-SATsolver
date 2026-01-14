@@ -1,0 +1,19 @@
+module SpecEval( 
+    module SpecEval.ANF,
+    module SpecEval.AST, 
+    module SpecEval.Eval,
+    module SpecEval.Gates,
+    module SpecEval.Parser,
+    module SpecEval.Grovers,
+    module SpecEval.Verif, 
+    module SpecEval.Measure,       
+  ) where
+
+import SpecEval.ANF
+import SpecEval.AST
+import SpecEval.Eval 
+import SpecEval.Gates 
+import SpecEval.Parser
+import SpecEval.Grovers
+import SpecEval.Verif
+import SpecEval.Measure 

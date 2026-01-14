@@ -1,7 +1,7 @@
 {-# LANGUAGE DerivingStrategies #-}
-module LinAlg(Qubit, qubit, evalSingle, qfst, qsnd, ApproxEq(..), C, (/^), (*^), setQubit, ppComplex, unQubit) where
+module GenEval.LinAlg(Qubit, qubit, evalSingle, qfst, qsnd, ApproxEq(..), C, (/^), (*^), setQubit, ppComplex, unQubit) where
 
-import Gates
+import GenEval.Gates
 import Numeric.LinearAlgebra
 
 class ApproxEq a where

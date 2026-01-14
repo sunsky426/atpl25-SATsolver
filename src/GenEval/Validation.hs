@@ -1,7 +1,7 @@
-module Validation where
+module GenEval.Validation where
 
-import AST
-import Generator
+import GenEval.AST
+import GenEval.Generator
 import Data.Maybe
 import Prelude hiding (exp)
 
