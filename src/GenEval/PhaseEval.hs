@@ -1,7 +1,7 @@
-module PhaseEval where
+module GenEval.PhaseEval where
 
-import Gates
-import Tensors
+import GenEval.Gates
+import GenEval.Tensors
 import Data.Complex
 import qualified Data.Vector as V
 import qualified Data.Vector.Mutable as MV

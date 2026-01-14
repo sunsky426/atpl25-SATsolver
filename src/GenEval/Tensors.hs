@@ -1,4 +1,4 @@
-module Tensors where
+module GenEval.Tensors where
 
 import Data.Vector
 import Data.Complex

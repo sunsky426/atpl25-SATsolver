@@ -1,4 +1,4 @@
-module AST where
+module GenEval.AST where
 
 data Exp = 
     Const Bool
