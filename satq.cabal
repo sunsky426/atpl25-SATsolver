@@ -13,55 +13,49 @@ common warnings
 
 library
     import:           warnings
-    exposed-modules:  AST,
-                      ANF,
-                      Generator,
-                      Parser,
-                      Quantumize,
-                      Grovers,
-                      Eval,
-                      PhaseEval,
-                      Gates,
-                      LinAlg,
-                      Comp,
-                      Transform,
-                      EvalMV,
-                      StateVector,
-                      Verif,
-                      Tensors,
-                      Measure,
-                      Validation
-    -- other-extensions:
+    exposed-modules:  GenEval,
+                      SpecEval,
+                      GenEval_Tests,
+                      SpecEval_PropTests,
+                      Tests
+    other-modules:    GenEval.ANF,
+                      GenEval.Comp,
+                      GenEval.Grovers,
+                      GenEval.Parser,
+                      GenEval.AST,
+                      GenEval.Eval,
+                      GenEval.Gates,
+                      GenEval.Generator,
+                      GenEval.LinAlg,
+                      GenEval.StateVector,
+                      SpecEval.ANF,
+                      SpecEval.AST,
+                      SpecEval.Eval, 
+                      SpecEval.Gates, 
+                      SpecEval.Parser,
+                      SpecEval.Measure,
+                      SpecEval.Verif,
+                      SpecEval.Grovers
     build-depends:    base ^>=4.18.2.1,
                       mtl,
                       random,
                       hmatrix,
                       vector,
-                      containers
+                      containers,
+                      tasty,
+                      tasty-hunit,
+                      QuickCheck,
+                      tasty-quickcheck
     hs-source-dirs:   exe,
-                      src
+                      src,
+                      tests,
+                      src/GenEval,
+                      src/SpecEval
     default-language: GHC2021
 
 executable SATQ
     import:           warnings
     main-is:          SAT.hs
-
-    build-depends:    base ^>=4.18.2.1,
-                      mtl,
-                      satq,
-                      random,
-                      hmatrix,
-                      vector,
-                      containers
-
-    hs-source-dirs:   exe
-
-    default-language: GHC2021
-
-executable grover
-    import:           warnings
-    main-is:          grover.hs
-    -- other-extensions:
     build-depends:    base ^>=4.18.2.1,
                       mtl,
                       satq,
@@ -69,22 +63,34 @@ executable grover
                       hmatrix,
                       vector,
                       containers,
-                      criterion
+                      tasty,
+                      tasty-hunit
+
+    hs-source-dirs:   exe,
+
+    default-language: GHC2021
+
+executable grover
+    import:           warnings
+    main-is:          grover.hs
+    build-depends:    base ^>=4.18.2.1,
+                      mtl,
+                      satq,
+                      random,
+                      hmatrix,
+                      vector,
+                      criterion,
+                      containers, 
+                      QuickCheck
     hs-source-dirs:   exe,
     default-language: GHC2021
 
 test-suite tests
     type: exitcode-stdio-1.0
     main-is: runtests.hs
-    other-modules:    Eval_Tests,
-                      MV_Tests,
-                      Tests,
-    hs-source-dirs:   tests
     build-depends:
-        base ^>=4.18.2.1,
-        tasty,
-        tasty-hunit,
-        vector,
-        hmatrix,
-        containers,
-        satq
+        base
+      , tasty
+      , satq
+      , tasty-quickcheck
+      , QuickCheck

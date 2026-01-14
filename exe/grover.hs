@@ -1,19 +1,14 @@
 {-# OPTIONS_GHC -Wno-overlapping-patterns #-}
-import EvalMV
-import StateVector
-import LinAlg
-import Gates
+import GenEval
 import Data.Set as S
 import Data.List as L
-import Debug.Trace
 import System.Environment
 import Criterion.Main
-import Comp (phaseOracle)
-import Control.Monad (forM, forM_)
 
 numberOfRuns :: Int -> Int
 numberOfRuns qbCount = floor $ ((pi :: Float) / (4 :: Float)) * sqrt (2 ^ qbCount)
 
+singleSol :: Int -> [Int] -> [Gate]
 singleSol qbCount [] = [
     Ctrl Z (S.fromList $ tail [0 .. qbCount-1]) 0
   ]
@@ -25,6 +20,7 @@ singleSol qbCount negList = [
     Sing X (S.fromList negList)
   ]
 
+generateGroversCircuit :: [Gate] -> Int -> [Gate]
 generateGroversCircuit oracle qbCount =
    Sing H (S.fromList allQ) :
    concat (replicate (numberOfRuns qbCount) (oracle ++ amplification))
@@ -37,36 +33,20 @@ generateGroversCircuit oracle qbCount =
             Sing H (S.fromList allQ)
           ]
 
--- main :: IO ()
--- main = 
-
-  -- putStr $ getBest $ eval (
-
-  -- ) 1 qubits
-
+runGrovers :: Int -> [Int] -> [PureTensorIV]
 runGrovers qbCount negList =
   let oracle = singleSol qbCount negList
       groversCircuit = generateGroversCircuit oracle (fromIntegral qbCount)
   in  eval groversCircuit 1 [qubit (sqrt 1) (sqrt 0) | _ <- [0 .. (qbCount-1)]]
 
+parseNegList :: [String] -> Int -> [Int]
 parseNegList negListStr qbCount
   | L.null negListStr = []
   | negListStr == ["all"] = [0 .. qbCount-1]
   | otherwise = read ("[" ++ head negListStr ++ "]") :: [Int]
 
 
--- oracleCircuit = [
---     Sing H (S.fromList [0 .. 5]),
-
---     Ctrl Z (S.fromList [1]) 4,
-
---     Ctrl Z (S.fromList [1 .. 2]) 4, 
-
---     Ctrl Z (S.fromList [1 .. 3]) 4
-    
---     -- Sing H (S.fromList [0 .. 5])
---   ]
-
+oracleCircuit :: [Gate]
 oracleCircuit = [
     Sing H (S.fromList [0 .. 3]),
 
@@ -99,7 +79,7 @@ main = do
           putStr $ ppSV $ tensorToStateVector groversResult
         "man":_ -> do 
             -- mapM_ print $ eval oracleCircuit 1 [qubit (sqrt 1) (sqrt 0) | _ <- [0 .. 5]]
-            putStr $ ppSV $ tensorToStateVector $ eval oracleCircuit 1 [qubit (sqrt 1) (sqrt 0) | _ <- [0 .. 4]]
+            putStr $ ppSV $ tensorToStateVector $ eval oracleCircuit 1 [qubit (sqrt 1) (sqrt 0) | _ <- [(0 :: Integer) .. 4]]
         qbCountStr:negListStr -> do
           let qbCount = read qbCountStr
               groversResult = runGrovers qbCount (parseNegList negListStr qbCount)

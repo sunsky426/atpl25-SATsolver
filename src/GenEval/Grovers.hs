@@ -1,6 +1,6 @@
-module Grovers where
+module GenEval.Grovers where
 
-import Gates
+import GenEval.Gates
 
 pow :: Op -> Int -> QP
 pow op i = map (Single op) [0..i-1]

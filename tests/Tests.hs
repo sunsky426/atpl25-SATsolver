@@ -3,10 +3,7 @@ module Tests (tests) where
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (testCase, (@?=), assertBool)
 
-import AST
-import ANF
-import Gates
-import Comp
+import GenEval
 
 tests :: TestTree
 tests =
@@ -50,9 +47,9 @@ tests =
           testCase "~(a & b)" $
             phaseOracle (NEG (AND (Var 0) (Var 1)))
               @?= [CZ [0,1], Single Z 0]
-      ],
-      testGroup
-        "Complete Pipeline Tests"
-        [
-        ]
+      ]
+      --testGroup
+      --  "Complete Pipeline Tests"
+      --  [
+      --  ]
     ]

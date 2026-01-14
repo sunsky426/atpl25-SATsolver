@@ -1,8 +1,8 @@
-module Measure where
+module GenEval.Measure where
 
-import Eval ( Tensor, PureTensor(..) )
+import GenEval.Eval ( Tensor, PureTensor(..) )
 import Numeric.LinearAlgebra
-import LinAlg(unQubit)
+import GenEval.LinAlg(unQubit)
 import qualified Data.Vector as V
 
 vectorize :: Tensor -> Vector C

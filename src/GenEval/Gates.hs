@@ -1,4 +1,4 @@
-module Gates where
+module GenEval.Gates where
 
 -- the building bricks of quantum simulation.
 type Pos = Int

@@ -1,6 +1,6 @@
-module ANF where
+module GenEval.ANF where
 
-import AST
+import GenEval.AST
 
 data ANF
   = Cst Bool

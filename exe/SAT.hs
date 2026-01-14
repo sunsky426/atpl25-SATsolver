@@ -1,20 +1,9 @@
 module Main where
 
-import AST
-import ANF
-import Comp
-import Grovers
-import Validation
-import Gates
-import Parser
-import EvalMV
-import LinAlg
-import Grovers
-import StateVector
+import GenEval
 import System.Environment (getArgs)
 import Data.List (intersperse)
 import qualified Data.Set as S
-import qualified Data.Vector as V
 
 -- deprecate once gate types are no longer separate
 changeGateType :: QGate -> Gate
@@ -26,6 +15,7 @@ changeGateType qp =
     CZ (pos:pos') -> Ctrl Z (S.fromList pos') pos
     CZ [] -> error "fun"
 
+type Solution = [Bool]
 
 --unique :: Exp -> Int
 --unique e =
@@ -65,6 +55,6 @@ main = do
     [input] -> 
       let (bexp,vars) = parseWithUnique input
           n = length vars
-          --solution = solve n bexp
-       in do solve n bexp --ppResult solution vars
+          solution = solve n bexp
+       in ppResult solution vars
     _ -> do putStrLn "Usage: cabal run \"<boolexp>\""
