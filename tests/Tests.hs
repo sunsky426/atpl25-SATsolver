@@ -1,13 +1,13 @@
 module Tests where
 
-import AST
-import ANF
-import Verif
+import SpecEval.AST
+import SpecEval.ANF
+import SpecEval.Verif
 import Test.QuickCheck
-import Eval (evalProgram, zero, scanProgram)
-import Measure (vectorize, seperateSolution)
-import Grovers (grovers)
-import Gates (CircuitWidth)
+import SpecEval.Eval (evalProgram, zero, scanProgram)
+import SpecEval.Measure (vectorize, seperateSolution)
+import SpecEval.Grovers (grovers)
+import SpecEval.Gates (CircuitWidth)
 import Data.List (nub)
 import Data.Vector.Storable (Vector)
 import Data.Vector.Unboxed.Mutable (MVector(MV_2))
