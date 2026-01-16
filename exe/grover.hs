@@ -15,20 +15,36 @@ getBestSE (_ : SE.PT _ qbs : _) =
                     [amp0, amp1] | abs amp0 > abs amp1 -> '0'
                     [_, _] -> '1'
                     _ -> error "Expected qubit to have two elements") . NL.toList . SE.unQubit) l
-getBestSE _ = error "Get bes needs two pure tensors"
+getBestSE _ = error "Get best needs two pure tensors"
+
+runGroversSE :: Int -> Tensor
+runGroversSE qbCount = 
+  let oracle = [MCZ [0..qbCount-1]]
+      groversCircuit = grovers qbCount oracle (numberOfRuns qbCount) 
+  in evalProgram groversCircuit (zero qbCount)
+    
 
 main :: IO ()
 main = do
     args <- getArgs
     case args of
-        "bench-gen":qbCountStr:_ -> do
-          let qbCount = read qbCountStr
+        "bench-spec":qbCountStr:_ -> do
+          let maxQbCount = read qbCountStr
               benchList = [
-                  bench (show i L.++ " qubits") $ nf (getBest . runGrovers i) $ parseNegList ["all"] i
-                  | i <- [2 .. qbCount]
+                  bench (show qbCount L.++ " qubits") $ nf (getBestSE . runGroversSE) qbCount
+                  | qbCount <- [2 .. maxQbCount]
                 ]
           withArgs (L.drop 2 args) $ defaultMain [
-              bgroup "single solution grover" benchList
+              bgroup "Grovers with single control-Z gate oracle using specialized evaluator" benchList
+            ]
+        "bench-gen":qbCountStr:_ -> do
+          let maxQbCount = read qbCountStr
+              benchList = [
+                  bench (show qbCount L.++ " qubits") $ nf (getBest . flip runGrovers []) qbCount
+                  | qbCount <- [2 .. maxQbCount]
+                ]
+          withArgs (L.drop 2 args) $ defaultMain [
+              bgroup "Grovers with single control-Z gate oracle using general evaluator" benchList
             ]
         "spec-sv":qbCountStr:negListStr -> do
           let qbCount = read qbCountStr
