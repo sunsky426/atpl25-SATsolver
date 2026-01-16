@@ -1,95 +1,63 @@
 {-# OPTIONS_GHC -Wno-overlapping-patterns #-}
-import GenEval
-import Data.Set as S
+{- HLINT ignore "Use lambda-case" -}
+import GenEval as GE
+import SpecEval as SE
+import Data.Vector as V
 import Data.List as L
 import System.Environment
 import Criterion.Main
+import Numeric.LinearAlgebra as NL
 
-numberOfRuns :: Int -> Int
-numberOfRuns qbCount = floor $ ((pi :: Float) / (4 :: Float)) * sqrt (2 ^ qbCount)
-
-singleSol :: Int -> [Int] -> [Gate]
-singleSol qbCount [] = [
-    Ctrl Z (S.fromList $ tail [0 .. qbCount-1]) 0
-  ]
-singleSol qbCount negList = [
-    Sing X (S.fromList negList),
-
-    Ctrl Z (S.fromList $ tail [0 .. qbCount-1]) 0,
-
-    Sing X (S.fromList negList)
-  ]
-
-generateGroversCircuit :: [Gate] -> Int -> [Gate]
-generateGroversCircuit oracle qbCount =
-   Sing H (S.fromList allQ) :
-   concat (replicate (numberOfRuns qbCount) (oracle ++ amplification))
-  where allQ = [0 .. qbCount-1]
-        amplification = [
-            Sing H (S.fromList allQ),
-            Sing X (S.fromList allQ),
-            Ctrl Z (S.fromList $ tail allQ) 0,
-            Sing X (S.fromList allQ),
-            Sing H (S.fromList allQ)
-          ]
-
-runGrovers :: Int -> [Int] -> [PureTensorIV]
-runGrovers qbCount negList =
-  let oracle = singleSol qbCount negList
-      groversCircuit = generateGroversCircuit oracle (fromIntegral qbCount)
-  in  eval groversCircuit 1 [qubit (sqrt 1) (sqrt 0) | _ <- [0 .. (qbCount-1)]]
-
-parseNegList :: [String] -> Int -> [Int]
-parseNegList negListStr qbCount
-  | L.null negListStr = []
-  | negListStr == ["all"] = [0 .. qbCount-1]
-  | otherwise = read ("[" ++ head negListStr ++ "]") :: [Int]
-
-
-oracleCircuit :: [Gate]
-oracleCircuit = [
-    Sing H (S.fromList [0 .. 3]),
-
-    Ctrl Z (S.fromList [0 .. 2]) 3,
-
-    Ctrl Z (S.fromList [0 .. 1]) 3
-
-    -- Ctrl Z (S.fromList [1]) 4
-
-    -- Sing H (S.fromList [0 .. 5])
-  ]
+getBestSE :: [SE.PureTensor] -> String
+getBestSE (_ : SE.PT _ qbs : _) =
+  let l = V.toList qbs in
+    L.map ((\qb -> case qb of
+                    [amp0, amp1] | abs amp0 > abs amp1 -> '0'
+                    [_, _] -> '1'
+                    _ -> error "Expected qubit to have two elements") . NL.toList . SE.unQubit) l
+getBestSE _ = error "Get bes needs two pure tensors"
 
 main :: IO ()
 main = do
     args <- getArgs
     case args of
-        "bench":qbCountStr:_ -> do
+        "bench-gen":qbCountStr:_ -> do
           let qbCount = read qbCountStr
               benchList = [
-                  bench (show i ++ " qubits") $ nf (getBest . runGrovers i) $ parseNegList ["all"] i
+                  bench (show i L.++ " qubits") $ nf (getBest . runGrovers i) $ parseNegList ["all"] i
                   | i <- [2 .. qbCount]
                 ]
-          -- print benchList
-          withArgs (L.drop 2 args) $ defaultMain [ 
+          withArgs (L.drop 2 args) $ defaultMain [
               bgroup "single solution grover" benchList
             ]
-        "sv":qbCountStr:negListStr -> do
+        "spec-sv":qbCountStr:negListStr -> do
+          let qbCount = read qbCountStr
+              nl = parseNegList negListStr qbCount
+              oracle = [Only qp SE.X | qp <- nl] L.++ [MCZ [0..qbCount-1]] L.++ [Only qp SE.X | qp <- nl]
+              groversCircuit = grovers qbCount oracle (numberOfRuns qbCount)
+              solution = vectorize $ evalProgram groversCircuit (zero qbCount)
+          putStr $ ppSV solution
+        "spec-one":qbCountStr:negListStr -> do
+          let qbCount = read qbCountStr
+              nl = parseNegList negListStr qbCount
+              oracle = [Only qp SE.X | qp <- nl] L.++ [MCZ [0..qbCount-1]] L.++ [Only qp SE.X | qp <- nl]
+              groversCircuit = grovers qbCount oracle (numberOfRuns qbCount)
+              solution = getBestSE $ evalProgram groversCircuit (zero qbCount)
+          putStr solution
+        "gen-sv":qbCountStr:negListStr -> do
           let qbCount = read qbCountStr
               groversResult = runGrovers qbCount (parseNegList negListStr qbCount)
           putStr $ ppSV $ tensorToStateVector groversResult
-        "man":_ -> do 
-            -- mapM_ print $ eval oracleCircuit 1 [qubit (sqrt 1) (sqrt 0) | _ <- [0 .. 5]]
-            putStr $ ppSV $ tensorToStateVector $ eval oracleCircuit 1 [qubit (sqrt 1) (sqrt 0) | _ <- [(0 :: Integer) .. 4]]
-        qbCountStr:negListStr -> do
+        "gen-one":qbCountStr:negListStr -> do
           let qbCount = read qbCountStr
               groversResult = runGrovers qbCount (parseNegList negListStr qbCount)
           putStr $ getBest groversResult
           putStr "\n"
         _ -> do
             putStrLn "Usage:"
-            putStrLn "Running benchmarks up to some number of qubits: "  
+            putStrLn "Running benchmarks up to some number of qubits: "
             putStrLn "\t<number of qubits>"
-            putStrLn "\tExample: \"cabal run grover -- bench 10\"" 
+            putStrLn "\tExample: \"cabal run grover -- bench 10\""
             putStrLn ""
             putStrLn "Running grover single solution: "
             putStrLn "\tOutput only correct solution:"
