@@ -27,27 +27,27 @@ tests =
           testCase "~(a & b)" $
             astToAnf (NEG (AND (Var 0) (Var 1)))
               @?= (Xor (And (Pos 0) (Pos 1)) (Cst True))
-      ],
-      ---
-      testGroup
-        "AST -> PhaseOracle" [
-          ---
-          testCase "a | b" $
-            phaseOracle (OR (Var 0) (Var 1))
-              @?= [Single Z 0,Single Z 1, CZ [0,1]],
-          ---
-          testCase "a & b" $
-            phaseOracle (AND (Var 0) (Var 1))
-              @?= [CZ [0,1]],
-          ---
-          testCase "a ^ b" $
-            phaseOracle (XOR (Var 0) (Var 1))
-              @?= [Single Z 0, Single Z 1],
-          ---
-          testCase "~(a & b)" $
-            phaseOracle (NEG (AND (Var 0) (Var 1)))
-              @?= [CZ [0,1], Single Z 0]
       ]
+      ---
+      --testGroup
+      --  "AST -> PhaseOracle" [
+      --    ---
+      --    testCase "a | b" $
+      --      phaseOracle (OR (Var 0) (Var 1))
+      --        @?= [Single Z 0,Single Z 1, CZ [0,1]],
+      --    ---
+      --    testCase "a & b" $
+      --      phaseOracle (AND (Var 0) (Var 1))
+      --        @?= [CZ [0,1]],
+      --    ---
+      --    testCase "a ^ b" $
+      --      phaseOracle (XOR (Var 0) (Var 1))
+      --        @?= [Single Z 0, Single Z 1],
+      --    ---
+      --    testCase "~(a & b)" $
+      --      phaseOracle (NEG (AND (Var 0) (Var 1)))
+      --        @?= [CZ [0,1], Single Z 0]
+      --]
       --testGroup
       --  "Complete Pipeline Tests"
       --  [

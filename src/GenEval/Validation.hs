@@ -25,12 +25,6 @@ validate bexp ass =
   where
     validateBoth e1 e2 f = f (validate e1 ass) (validate e2 ass)
 
-
--- only needed for validating that an expression is not satisfiable.
---bruteSATSolver :: Exp -> Solution
---bruteSATSolver _ = Nothing -- TODO: add actual SAT solving logic
-
-
 validatePipeline :: (Exp -> Solution) -> GenConfig -> Maybe [BadSolution]
 validatePipeline pipeline config =
   let 
@@ -45,21 +39,6 @@ validatePipeline pipeline config =
         case validate exp' res of
           True  -> Nothing
           False -> Just (exp',res)
-      --check res exp' = 
-      --  case res of
-      --    Nothing -> 
-      --      case bruteSATSolver exp' of
-      --        Nothing -> Nothing
-      --        Just res' -> 
-      --          Just $ CounterExample 
-      --            { exp = exp', 
-      --              proposition = Nothing, 
-      --              solution = Just res' 
-      --            }
-      --    Just res' -> 
-      --      if validate exp' res'
-      --        then Nothing 
-      --        else Just $ CounterExample { exp = exp', proposition = Just res', solution = Nothing}
 
       -- actually checking each pipeline/evaluator result
       checked = mapMaybe (\(res,exp) -> check res exp) $ zip evaluated exps

@@ -28,6 +28,7 @@ library
                       GenEval.Generator,
                       GenEval.LinAlg,
                       GenEval.StateVector,
+                      GenEval.Validation,
                       SpecEval.ANF,
                       SpecEval.AST,
                       SpecEval.Eval, 

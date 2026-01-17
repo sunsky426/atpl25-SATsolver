@@ -12,13 +12,6 @@ import GenEval.Gates
 import Data.Maybe
 import Numeric.LinearAlgebra
 
-data Gate =
-    Sing  Op (Set Int)
-  | Ctrl  Op (Set Int) Int
-  deriving Show
-
-type Circuit = [Gate]
-
 data PureTensorMV s = PT {
   scalarMV :: C,
   qbsMV :: V.MVector (PrimState (ST s)) Qubit

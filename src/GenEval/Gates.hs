@@ -1,5 +1,7 @@
 module GenEval.Gates where
 
+import qualified Data.Set as S
+
 -- the building bricks of quantum simulation.
 type Pos = Int
 
@@ -8,10 +10,9 @@ data Op
   = I | X | Y | Z | H
   deriving (Show, Eq)
 
-data QGate
-  = Single Op Pos
-  | C [Pos] Pos Op
-  | CZ [Pos]
+data Gate
+  = Sing Op (S.Set Int)
+  | Ctrl Op (S.Set Int) Int
   deriving (Show,Eq)
 
-type QP = [QGate]
+type Circuit = [Gate]

@@ -3,46 +3,22 @@ module Main where
 import GenEval
 import System.Environment (getArgs)
 import Data.List (intersperse)
-import qualified Data.Set as S
 
--- deprecate once gate types are no longer separate
-changeGateType :: QGate -> Gate
-changeGateType qp =
-  case qp of
-    Single op pos -> Sing op $ S.singleton pos
-    C pos1 pos2 op-> Ctrl op (S.fromList pos1) pos2
-    CZ (pos:[]) -> Sing Z $ S.singleton pos
-    CZ (pos:pos') -> Ctrl Z (S.fromList pos') pos
-    CZ [] -> error "fun"
-
-type Solution = [Bool]
-
---unique :: Exp -> Int
---unique e =
---  case e of
---    Const _ -> 0
---    Var i -> i+1
---    AND e1 e2 -> max (unique e1) (unique e2)
---    OR e1 e2 -> max (unique e1) (unique e2)
---    XOR e1 e2 -> max (unique e1) (unique e2)
---    NEG e' -> unique e'
-
-
-solve :: Int -> Exp -> Solution
+solve :: Int -> Exp -> IO ()
 solve n bexp =
   let oracle = phaseOracle bexp
-      groverSingleIteration = pow H n ++ groverIteration oracle (diffusion n) 1
-      groverByDef = grover oracle n
-      grovers = map changeGateType groverSingleIteration--groverSingleIteration
+      grovers = pow H n ++ groverIteration oracle (diffusion n) 1
+      --grovers = grover oracle n
       zeroTens = replicate n (qubit 1 0)
       resultingTensor = eval grovers 1 zeroTens
-   in outcome $ tensorToStateVector resultingTensor
-      --do 
-      --  putStrLn $ ppSV $ tensorToStateVector resultingTensor
-      --  putStrLn $ show $ outcome $ tensorToStateVector resultingTensor
-      --  putStrLn $ show $ oracle
-      --  putStrLn $ show $ translateAstToAnf bexp
-      --  putStrLn $ show $ astToAnf bexp
+   in --outcome $ tensorToStateVector resultingTensor
+      do 
+        putStrLn $ show $ tensorToStateVector resultingTensor
+        putStrLn $ ppSV $ tensorToStateVector resultingTensor
+        putStrLn $ show $ outcome $ tensorToStateVector resultingTensor
+        putStrLn $ show $ oracle
+        putStrLn $ show $ bexp
+        putStrLn $ show $ astToAnf bexp
 
 ppResult :: Solution -> [String] -> IO ()
 ppResult sol vars = do
@@ -55,6 +31,6 @@ main = do
     [input] -> 
       let (bexp,vars) = parseWithUnique input
           n = length vars
-          solution = solve n bexp
-       in ppResult solution vars
+       in do solve n bexp--solution = solve n bexp
+       --in ppResult solution vars
     _ -> do putStrLn "Usage: cabal run \"<boolexp>\""
