@@ -71,7 +71,7 @@ tests =
                 res = evalPureTensors [] pts
             in assertBool "Tensors not identical" $ compareTensors res expected
           ),
-          testCase "Add scalars of pure tensors that are multiples of each other (1/2)" (
+          testCase "Simplify pure tensors that are multiples of each other (1/2)" (
             let pts = [
                     PTIV 3 (V.fromList [qubit (sqrt 0.8) (sqrt 0.2), qubit 0 1]),
                     PTIV 2 (V.fromList [qubit (sqrt 0.8) (sqrt 0.2), qubit 0 (-1)])
@@ -80,7 +80,7 @@ tests =
                 res = evalPureTensors [] pts
             in assertBool "Tensors not identical" $ compareTensors res expected
           ),
-          testCase "Add scalars of pure tensors that are multiples of each other (2/2)" (
+          testCase "Simplify pure tensors that are multiples of each other (2/2)" (
             let pts = [
                     PTIV 1 (V.fromList [qubit (sqrt 0.8) (sqrt 0.2), qubit 0 (-1)]),
                     PTIV 2 (V.fromList [qubit (sqrt 0.8) (sqrt 0.2), qubit 0 1]),
