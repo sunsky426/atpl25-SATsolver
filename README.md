@@ -28,7 +28,7 @@ cabal run grover -- <spec|gen>-sv <number of qubits> [qubits to negate]
 ```
 As an example:
 ```sh
-cabal run grover -- spec-one 5 0,2,4
+cabal run grover -- spec-sv 5 0,2,4
 ```
 
 ## Benchmarking
