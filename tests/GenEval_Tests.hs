@@ -119,7 +119,18 @@ tests =
       testGroup
         "Misc"
         [
-          testCase "Order does not matter when gates are independent" (
+          testCase "Final rank is correct (1/2)" (
+            let qbl = [qubit (sqrt 0.5) (sqrt 0.5) | _ <- [0 :: Integer .. 5]]
+                circuit = [
+                    Ctrl Z (S.fromList [0]) 1,
+                    Ctrl Z (S.fromList [2]) 3,
+                    Ctrl Z (S.fromList [4]) 5
+                  ]
+                res = eval circuit 1 qbl
+            in
+              assertBool "Number of pure tensors is correct" $ L.length res == 8
+          ), 
+          testCase "Final rank is correct (2/2)" (
             let qbl = [qubit (sqrt 0.5) (sqrt 0.5) | _ <- [0 :: Integer .. 5]]
                 circuit = [
                     Ctrl Z (S.fromList [0 .. 4]) 5,
@@ -127,6 +138,32 @@ tests =
                     Ctrl Z (S.fromList [0 .. 2]) 5,
                     Ctrl Z (S.fromList [0 .. 1]) 5,
                     Ctrl Z (S.fromList [0]) 5
+                  ]
+                res = eval circuit 1 qbl
+            in
+              assertBool "Number of pure tensors is correct" $ L.length res == 6
+          ),
+          testCase "Order does not matter when gates are independent (1/2)" (
+            let qbl = [qubit (sqrt 0.5) (sqrt 0.5) | _ <- [0 :: Integer .. 5]]
+                circuit = [
+                    Ctrl Z (S.fromList [0 .. 4]) 5,
+                    Ctrl Z (S.fromList [0 .. 3]) 5,
+                    Ctrl Z (S.fromList [0 .. 2]) 5,
+                    Ctrl Z (S.fromList [0 .. 1]) 5,
+                    Ctrl Z (S.fromList [0]) 5
+                  ]
+                res1 = eval circuit 1 qbl
+                res2 = eval (L.reverse circuit) 1 qbl
+                round' x = round $ realPart x * 1000000
+            in
+              assertBool "Number of pure tensors and result is the same" $ L.length res1 == L.length res2 && L.map round' (NL.toList $ tensorToStateVector res1) == L.map round' (NL.toList $ tensorToStateVector res2)
+          ),
+          testCase "Order does not matter when gates are independent (2/2)" (
+            let qbl = [qubit (sqrt 0.5) (sqrt 0.5) | _ <- [0 :: Integer .. 5]]
+                circuit = [
+                    Ctrl Z (S.fromList [0]) 1,
+                    Ctrl Z (S.fromList [2]) 3,
+                    Ctrl Z (S.fromList [4]) 5
                   ]
                 res1 = eval circuit 1 qbl
                 res2 = eval (L.reverse circuit) 1 qbl
