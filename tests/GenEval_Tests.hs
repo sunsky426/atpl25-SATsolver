@@ -30,7 +30,7 @@ evalPureTensors circuit pts = runST evaluator
 tests :: TestTree
 tests =
   testGroup
-    "Unit tests for general evaluator" [
+    "General evaluator" [
       testGroup
         "Evaluation of gates"
         [
