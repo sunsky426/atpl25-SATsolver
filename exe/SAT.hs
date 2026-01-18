@@ -4,21 +4,21 @@ import GenEval
 import System.Environment (getArgs)
 import Data.List (intersperse)
 
-solve :: Int -> Exp -> IO ()
+solve :: Int -> Exp -> Solution
 solve n bexp =
   let oracle = phaseOracle bexp
       grovers = pow H n ++ groverIteration oracle (diffusion n) 1
       --grovers = grover oracle n
       zeroTens = replicate n (qubit 1 0)
       resultingTensor = eval grovers 1 zeroTens
-   in --outcome $ tensorToStateVector resultingTensor
-      do 
-        putStrLn $ show $ tensorToStateVector resultingTensor
-        putStrLn $ ppSV $ tensorToStateVector resultingTensor
-        putStrLn $ show $ outcome $ tensorToStateVector resultingTensor
-        putStrLn $ show $ oracle
-        putStrLn $ show $ bexp
-        putStrLn $ show $ astToAnf bexp
+   in outcome $ tensorToStateVector resultingTensor
+      --do 
+      --  putStrLn $ show $ resultingTensor
+      --  putStrLn $ ppSV $ tensorToStateVector resultingTensor
+      --  putStrLn $ show $ outcome $ tensorToStateVector resultingTensor
+      --  putStrLn $ show $ oracle
+      --  putStrLn $ show $ bexp
+      --  putStrLn $ show $ astToAnf bexp
 
 ppResult :: Solution -> [String] -> IO ()
 ppResult sol vars = do
@@ -31,6 +31,6 @@ main = do
     [input] -> 
       let (bexp,vars) = parseWithUnique input
           n = length vars
-       in do solve n bexp--solution = solve n bexp
-       --in ppResult solution vars
+          solution = solve n bexp
+       in ppResult solution vars
     _ -> do putStrLn "Usage: cabal run \"<boolexp>\""
