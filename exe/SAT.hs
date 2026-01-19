@@ -6,19 +6,10 @@ import Data.List (intersperse)
 
 solve :: Int -> Exp -> Solution
 solve n bexp =
-  let oracle = phaseOracle bexp
-      grovers = pow H n ++ groverIteration oracle (diffusion n) 1
-      --grovers = grover oracle n
-      zeroTens = replicate n (qubit 1 0)
-      resultingTensor = eval grovers 1 zeroTens
-   in outcome $ tensorToStateVector resultingTensor
-      --do 
-      --  putStrLn $ show $ resultingTensor
-      --  putStrLn $ ppSV $ tensorToStateVector resultingTensor
-      --  putStrLn $ show $ outcome $ tensorToStateVector resultingTensor
-      --  putStrLn $ show $ oracle
-      --  putStrLn $ show $ bexp
-      --  putStrLn $ show $ astToAnf bexp
+  let (truth,oracle) = phaseOracle bexp
+      grovers = grover oracle n
+      ts = evalProgram grovers n
+   in if truth then mostLikelyBits n ts else leastLikelyBits n ts
 
 ppResult :: Solution -> [String] -> IO ()
 ppResult sol vars = do
