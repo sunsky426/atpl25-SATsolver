@@ -6,10 +6,28 @@ license:            BSD-3-Clause
 author:             Barbella, Kanne, Schmidt, Zou
 maintainer:         -
 build-type:         Simple
-extra-doc-files:    CHANGELOG.md
 
 common warnings
-    ghc-options: -Wall
+    ghc-options: -Wall -Wno-orphans -Wno-unused-imports
+
+common common-options
+    default-language: GHC2021    
+    default-extensions:
+        NoMonomorphismRestriction,
+        FlexibleContexts,
+        FlexibleInstances,
+        TypeFamilies,
+        TypeSynonymInstances,
+        BinaryLiterals,
+        PatternSynonyms,
+        ViewPatterns,
+        LambdaCase,
+        AllowAmbiguousTypes,
+        TypeApplications,
+        ScopedTypeVariables,
+        GeneralizedNewtypeDeriving,
+        DataKinds,
+        UndecidableInstances
 
 library
     import:           warnings
@@ -81,7 +99,7 @@ executable grover
                       criterion,
                       containers, 
                       QuickCheck
-    hs-source-dirs:   exe,
+    hs-source-dirs:   exe
     default-language: GHC2021
 
 test-suite tests
