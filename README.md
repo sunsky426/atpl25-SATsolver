@@ -43,9 +43,9 @@ Where `<bool-exp>` takes the form of alphanumerical atoms between binary operato
 cabal run SATQ "(a ^ (a & b)) | ~b"
 b -> False, a -> False
 ```
-The output assignments are printed to console, with parse-sensitive ordering. Parenthesis are not necessary, but forces the right relations.
+The output assignment is printed to console, with parse-sensitive ordering. The assignment picked is the term of the statevector with maximum amplitude.
 
-The pipeline does not yet work for all boolean expressions.
+The executable does not always pick a correct solution.
 
 ## Benchmarking
 Benchmarking for the evaluators can be run using commands of the form that specifies the type of oracle and what evaluator to use:
