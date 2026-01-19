@@ -65,38 +65,8 @@ normalizeAnf anf =
     _ -> anf
 
 
---toMono :: ANF -> MonoANF
---toMono (Cst True)  = [[]]  -- constant term
---toMono (Cst False) = []    -- no monomial
---toMono (Pos i)     = [[i]]
---toMono (Xor a b)   = combineMonos (toMono a ++ toMono b)
---toMono (And a b)   =
---  [ sort (ma ++ mb)
---  | ma <- toMono a
---  , mb <- toMono b
---  ]
---
----- Combine duplicates modulo 2
---combineMonos :: MonoANF -> MonoANF
---combineMonos monos =
---  [ m | (m, c) <- M.toList freq, odd c ]
---  where
---    freq = foldl (\acc m -> M.insertWith (+) m (1 :: Int) acc) M.empty monos
---
---reduceMonos :: [[Int]] -> [[Int]]
---reduceMonos monos =
---  [ m | (m, c) <- M.toList freq, odd c ]
---  where
---    -- canonicalize each mono and count occurrences
---    freq :: M.Map [Int] Int
---    freq = foldl
---      (\acc m -> M.insertWith (+) (sort . nub $ m) 1 acc)
---      M.empty
---      monos
-
 astToAnf :: Exp -> ANF
 astToAnf = normalizeRepeated . dist . translateAstToAnf
---reduceMonos . toMono . dist . normalizeAnf . translateAstToAnf
 
 -- a simple type that dictates, if the total ANF needs to be false or true
 type TCirc = (Bool,Circuit)
