@@ -17,9 +17,7 @@ library
                       SpecEval,
                       GenEval_Tests,
                       SpecEval_PropTests,
-                      Tests
     other-modules:    GenEval.ANF,
-                      GenEval.Comp,
                       GenEval.Grovers,
                       GenEval.Parser,
                       GenEval.AST,

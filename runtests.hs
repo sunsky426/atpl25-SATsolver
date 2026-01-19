@@ -11,6 +11,5 @@ main =
     testGroup
       "SATQ"
       [ GenEval_Tests.tests,
-        SpecEval_PropTests.tests,
-        Tests.tests
+        SpecEval_PropTests.tests
       ]

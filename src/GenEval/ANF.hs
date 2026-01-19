@@ -1,6 +1,12 @@
 module GenEval.ANF where
 
 import GenEval.AST
+import GenEval.Gates
+--import Data.List (sort,nub)
+import qualified Data.Set as S
+--import qualified Data.Map.Strict as M
+
+type MonoANF = [[Int]]
 
 data ANF
   = Cst Bool
@@ -12,12 +18,12 @@ data ANF
 translateAstToAnf :: Exp -> ANF
 translateAstToAnf (Const b) = Cst b
 translateAstToAnf (Var i) = Pos i
-translateAstToAnf (NEG e) = Xor (astToAnf e) (Cst True)
-translateAstToAnf (XOR e1 e2) = Xor (astToAnf e1) (astToAnf e2)
-translateAstToAnf (AND e1 e2) = And (astToAnf e1) (astToAnf e2)
+translateAstToAnf (NEG e) = Xor (translateAstToAnf e) (Cst True)
+translateAstToAnf (XOR e1 e2) = Xor (translateAstToAnf e1) (translateAstToAnf e2)
+translateAstToAnf (AND e1 e2) = And (translateAstToAnf e1) (translateAstToAnf e2)
 translateAstToAnf (OR e1 e2) =
-  let e1' = astToAnf e1
-      e2' = astToAnf e2
+  let e1' = translateAstToAnf e1
+      e2' = translateAstToAnf e2
    in Xor (Xor e1' e2') (And e1' e2') -- equivalent to elimORwXOR
 
 -- distribute And across Xor.
@@ -33,6 +39,11 @@ dist anf =
         (Xor a b,c) -> Xor (distAnd a c) (distAnd b c)
         (a,Xor b c) -> Xor (distAnd a b) (distAnd a c)
         _ -> And e1 e2
+
+normalizeRepeated :: ANF -> ANF
+normalizeRepeated anf =
+  let anf' = normalizeAnf anf
+   in if anf' == anf then anf' else normalizeRepeated anf'
 
 -- reduce ANF
 normalizeAnf :: ANF -> ANF
@@ -53,6 +64,61 @@ normalizeAnf anf =
     Xor a b -> Xor (normalizeAnf a) (normalizeAnf b)
     _ -> anf
 
--- double normalization may be needed in the future (unlikely)
+
+--toMono :: ANF -> MonoANF
+--toMono (Cst True)  = [[]]  -- constant term
+--toMono (Cst False) = []    -- no monomial
+--toMono (Pos i)     = [[i]]
+--toMono (Xor a b)   = combineMonos (toMono a ++ toMono b)
+--toMono (And a b)   =
+--  [ sort (ma ++ mb)
+--  | ma <- toMono a
+--  , mb <- toMono b
+--  ]
+--
+---- Combine duplicates modulo 2
+--combineMonos :: MonoANF -> MonoANF
+--combineMonos monos =
+--  [ m | (m, c) <- M.toList freq, odd c ]
+--  where
+--    freq = foldl (\acc m -> M.insertWith (+) m (1 :: Int) acc) M.empty monos
+--
+--reduceMonos :: [[Int]] -> [[Int]]
+--reduceMonos monos =
+--  [ m | (m, c) <- M.toList freq, odd c ]
+--  where
+--    -- canonicalize each mono and count occurrences
+--    freq :: M.Map [Int] Int
+--    freq = foldl
+--      (\acc m -> M.insertWith (+) (sort . nub $ m) 1 acc)
+--      M.empty
+--      monos
+
 astToAnf :: Exp -> ANF
-astToAnf = dist . normalizeAnf . translateAstToAnf
+astToAnf = normalizeRepeated . dist . translateAstToAnf
+--reduceMonos . toMono . dist . normalizeAnf . translateAstToAnf
+
+-- a simple type that dictates, if the total ANF needs to be false or true
+type TCirc = (Bool,Circuit)
+
+phaseOracle :: Exp -> TCirc
+phaseOracle e =
+  let anf = astToAnf e
+   in gates anf True
+  where
+    gates (Pos i) b = (b,[Sing Z (S.singleton i)])
+    gates (Cst True) b = (not b,[])
+    gates (Cst False) b = (b,[])
+    gates (Xor e1 e2) b =
+      let (b1,e1') = gates e1 b
+          (b2,e2') = gates e2 b1
+       in (b2,e1' ++ e2')
+    gates anf@(And _ _) b =
+      let atom = collect anf
+       in (b,[Ctrl Z (S.fromList $ init atom) (last atom)])
+      where
+        collect anf' =
+          case anf' of
+            Pos i -> [i]
+            And as bs -> collect as ++ collect bs
+            _ -> []

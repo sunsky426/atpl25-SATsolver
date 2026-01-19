@@ -8,7 +8,6 @@ module GenEval(
     module GenEval.StateVector,
     module GenEval.Parser,
     module GenEval.Grovers,
-    module GenEval.Comp,
     module GenEval.Validation,
   ) where
 
@@ -21,5 +20,4 @@ import GenEval.LinAlg
 import GenEval.StateVector
 import GenEval.Parser
 import GenEval.Grovers
-import GenEval.Comp
 import GenEval.Validation
