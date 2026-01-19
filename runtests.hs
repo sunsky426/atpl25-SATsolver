@@ -1,7 +1,6 @@
-import qualified Tests
 import qualified GenEval_Tests
+import qualified Grover_Tests
 import qualified SpecEval_PropTests
--- import qualified Tests
 import Test.Tasty (defaultMain, testGroup)
 import Test.Tasty.QuickCheck
 
@@ -11,5 +10,6 @@ main =
     testGroup
       "SATQ"
       [ GenEval_Tests.tests,
+        Grover_Tests.tests,
         SpecEval_PropTests.tests
       ]

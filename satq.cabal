@@ -34,7 +34,8 @@ library
     exposed-modules:  GenEval,
                       SpecEval,
                       GenEval_Tests,
-                      SpecEval_PropTests,
+                      Grover_Tests,
+                      SpecEval_PropTests
     other-modules:    GenEval.ANF,
                       GenEval.Grovers,
                       GenEval.Parser,

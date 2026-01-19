@@ -36,7 +36,7 @@ complexOracleSE qbCount = [
 runGroversSE :: [SE.Gate] -> Int -> Tensor
 runGroversSE oracle qbCount = 
   let groversCircuit = grovers qbCount oracle (numberOfRuns qbCount) 
-  in evalProgram groversCircuit (zero qbCount)
+  in SE.evalProgram groversCircuit (zero qbCount)
 
 simpleOracleGE :: Int -> [GE.Gate]
 simpleOracleGE qbCount = singleSol qbCount [] 
@@ -121,14 +121,14 @@ main = do
               nl = parseNegList negListStr qbCount
               oracle = [Only qp SE.X | qp <- nl] L.++ [MCZ [0..qbCount-1]] L.++ [Only qp SE.X | qp <- nl]
               groversCircuit = grovers qbCount oracle (numberOfRuns qbCount)
-              solution = vectorize $ evalProgram groversCircuit (zero qbCount)
+              solution = vectorize $ SE.evalProgram groversCircuit (zero qbCount)
           putStr $ ppSV solution
         "spec-one":qbCountStr:negListStr -> do
           let qbCount = read qbCountStr
               nl = parseNegList negListStr qbCount
               oracle = [Only qp SE.X | qp <- nl] L.++ [MCZ [0..qbCount-1]] L.++ [Only qp SE.X | qp <- nl]
               groversCircuit = grovers qbCount oracle (numberOfRuns qbCount)
-              solution = getBestSE $ evalProgram groversCircuit (zero qbCount)
+              solution = getBestSE $ SE.evalProgram groversCircuit (zero qbCount)
           putStr solution
         "gen-sv":qbCountStr:negListStr -> do
           let qbCount = read qbCountStr

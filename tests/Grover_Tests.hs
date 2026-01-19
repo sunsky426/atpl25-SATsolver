@@ -35,7 +35,7 @@ runSE :: Int -> [QubitPos] -> String
 runSE qbCount nl =
     let oracle = [Only qp SE.X | qp <- nl] L.++ [MCZ [0..qbCount-1]] L.++ [Only qp SE.X | qp <- nl]
         groversCircuit = grovers qbCount oracle (numberOfRuns qbCount)
-    in getBestSE $ evalProgram groversCircuit (zero qbCount)
+    in getBestSE $ SE.evalProgram groversCircuit (zero qbCount)
 
 runGE :: Int -> [Int] -> String
 runGE qbCount nl =
