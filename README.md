@@ -31,6 +31,22 @@ As an example:
 cabal run grover -- spec-sv 5 0,2,4
 ```
 
+### Solving General Boolean Formulae
+
+The `SATQ` executable showcases the SAT-solving capabilities of Grover's algorithm, by allowing an arbitrary boolean formula to be evaluated through a select pipeline defined in `exe/SAT.hs`.
+The solver takes a single `String` argument:
+```
+cabal run SATQ "<bool-exp>"
+```
+Where `<bool-exp>` takes the form of alphanumerical atoms between binary operators `|, &, ^` and unary `~`. An example could be:
+```
+cabal run SATQ "(a ^ (a & b)) | ~b"
+b -> False, a -> False
+```
+The output assignments are printed to console, with parse-sensitive ordering. Parenthesis are not necessary, but forces the right relations.
+
+The pipeline does not yet work for all boolean expressions.
+
 ## Benchmarking
 Benchmarking for the evaluators can be run using commands of the form that specifies the type of oracle and what evaluator to use:
 ```
